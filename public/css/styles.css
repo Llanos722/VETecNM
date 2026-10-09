@@ -164,9 +164,31 @@ input:-webkit-autofill:active {
     transform: scale(0.98);
 }
 
-/* --- ENLACE INFERIOR --- */
+/* --- ENLACE INFERIOR Y BOTÓN SECUNDARIO --- */
+.btn-secondary {
+    width: 100%;
+    padding: 0.85rem;
+    background-color: transparent;
+    color: var(--primary-color);
+    border: 1.5px solid var(--primary-color);
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
+    transition: all 0.3s ease;
+    margin-top: 0.75rem;
+}
+.btn-secondary:hover {
+    background-color: rgba(43, 65, 98, 0.08);
+}
+
 .form-links {
-    margin-top: 1rem;
+    margin-top: 1.2rem;
+    padding-top: 1rem;
+    border-top: 1px solid #e5e7eb;
 }
 .form-links a {
     color: var(--text-muted);

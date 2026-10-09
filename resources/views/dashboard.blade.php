@@ -34,6 +34,21 @@
             align-items: center;
             gap: 15px;
         }
+        .btn-admin-link {
+            background: #2563eb;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.9rem;
+        }
+        .btn-admin-link:hover {
+            background: #1d4ed8;
+        }
         .btn-logout {
             background: #ef4444;
             color: white;
@@ -85,6 +100,8 @@
         .badge-cliente { background: #fef3c7; color: #92400e; }
         .badge-confirmada { background: #dcfce7; color: #166534; }
         .badge-pendiente { background: #fef9c3; color: #854d0e; }
+        .badge-finalizada { background: #e0f2fe; color: #075985; }
+        .badge-cancelada { background: #fee2e2; color: #991b1b; }
     </style>
 </head>
 <body>
@@ -94,6 +111,11 @@
             <span>VETecNM</span>
         </div>
         <div class="user-menu">
+            @if(session('user_rol') === 'admin')
+                <a href="{{ route('admin.dashboard') }}" class="btn-admin-link">
+                    <i class="fa-solid fa-user-shield"></i> Panel de Administración
+                </a>
+            @endif
             <span><i class="fa-regular fa-user"></i> {{ session('user_nombre', 'Usuario') }} ({{ session('user_rol', 'cliente') }})</span>
             <form action="{{ route('logout') }}" method="POST" style="display:inline;">
                 @csrf
@@ -103,6 +125,13 @@
     </nav>
 
     <div class="container">
+        @if(session('user_rol') === 'admin')
+            <div style="background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; padding: 1rem 1.5rem; border-radius: 10px; margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
+                <span><i class="fa-solid fa-shield-halved"></i> <strong>Modo Administrador Activo:</strong> Tienes permisos para gestionar citas, mascotas, usuarios y catálogo.</span>
+                <a href="{{ route('admin.dashboard') }}" class="btn-admin-link">Ir al Panel Admin <i class="fa-solid fa-arrow-right"></i></a>
+            </div>
+        @endif
+
         <div class="welcome-card">
             <h2>Bienvenido al Sistema VETecNM, {{ session('user_nombre') }} 👋</h2>
             <p style="color: var(--text-muted);">Gestión veterinaria integral (Base de datos MySQL conectada en Laragon).</p>
