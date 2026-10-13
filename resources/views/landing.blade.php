@@ -1967,10 +1967,10 @@
                         </select>
                     </div>
 
-                    <!-- Servicio Requerido -->
+                    <!-- Servicio Requerido (R-30) -->
                     <div class="input-group-modern">
                         <label for="servicio"><i class="fa-solid fa-stethoscope"></i> Servicio Deseado *</label>
-                        <select id="servicio" name="servicio" required>
+                        <select id="servicio" name="servicio" required onchange="cargarHorariosLanding()">
                             <option value="">-- Seleccionar Servicio --</option>
                             @foreach($categoriasServicios as $cat)
                                 <optgroup label="{{ $cat['nombre'] }}">
@@ -1983,31 +1983,35 @@
                             <option value="Revisión General de Rutina">Revisión General de Rutina</option>
                         </select>
                     </div>
+
+                    <!-- Profesional de Salud / Estética (R-30) -->
+                    <div class="input-group-modern">
+                        <label for="profesional"><i class="fa-solid fa-user-doctor"></i> Profesional de Salud / Estética *</label>
+                        <select id="profesional" name="profesional" required onchange="cargarHorariosLanding()">
+                            <option value="">-- Seleccionar Especialista --</option>
+                            @foreach($profesionalesList as $p)
+                                <option value="{{ $p['nombre'] }}">{{ $p['nombre'] }} ({{ $p['especialidad'] }})</option>
+                            @endforeach
+                        </select>
+                    </div>
                 </div>
 
                 <div class="form-grid-2">
-                    <!-- Fecha deseada -->
+                    <!-- Fecha deseada (R-30) -->
                     <div class="input-group-modern">
                         <label for="fecha"><i class="fa-regular fa-calendar"></i> Fecha de la Cita *</label>
-                        <input type="date" id="fecha" name="fecha" min="{{ date('Y-m-d') }}" value="{{ date('Y-m-d') }}" required>
+                        <input type="date" id="fecha" name="fecha" min="{{ date('Y-m-d') }}" value="{{ date('Y-m-d') }}" required onchange="cargarHorariosLanding()">
                     </div>
 
-                    <!-- Horario -->
+                    <!-- Horario disponible dinámico (R-31, Regla de 30 minutos) -->
                     <div class="input-group-modern">
-                        <label for="hora"><i class="fa-regular fa-clock"></i> Horario Disponible *</label>
+                        <label for="hora"><i class="fa-regular fa-clock"></i> Horario Disponible (R-31) *</label>
                         <select id="hora" name="hora" required>
-                            <option value="08:30">08:30 AM</option>
-                            <option value="09:00">09:00 AM</option>
-                            <option value="10:00">10:00 AM</option>
-                            <option value="11:00">11:00 AM</option>
-                            <option value="12:00">12:00 PM</option>
-                            <option value="13:30">01:30 PM</option>
-                            <option value="15:00">03:00 PM</option>
-                            <option value="16:00">04:00 PM</option>
-                            <option value="17:00">05:00 PM</option>
-                            <option value="18:30">06:30 PM</option>
-                            <option value="19:30">07:30 PM</option>
+                            <option value="">-- Selecciona profesional y fecha --</option>
                         </select>
+                        <small id="hora_info_landing" style="color: #64748b; font-size: 0.76rem; display: block; margin-top: 4px;">
+                            Muestra solo turnos hábiles sin empalmes ni horarios pasados.
+                        </small>
                     </div>
                 </div>
 
@@ -2143,13 +2147,69 @@
             }
         }
 
-        // Modal de Agendamiento (RF-05)
+        // Modal de Agendamiento (RF-05, R-30, R-31, R-32)
         function openScheduleModal() {
             document.getElementById('modalSchedule').classList.add('active');
+            cargarHorariosLanding();
         }
 
         function closeScheduleModal() {
             document.getElementById('modalSchedule').classList.remove('active');
+        }
+
+        // Cargar horarios disponibles dinámicos (R-31)
+        function cargarHorariosLanding() {
+            const fecha = document.getElementById('fecha').value;
+            const profesionalSelect = document.getElementById('profesional');
+            const profesional = profesionalSelect ? profesionalSelect.value : '';
+            const servicio = document.getElementById('servicio').value;
+            const selectHora = document.getElementById('hora');
+            const info = document.getElementById('hora_info_landing');
+
+            if (!fecha) return;
+
+            selectHora.innerHTML = '<option value="">Consultando disponibilidad...</option>';
+
+            fetch(`/api/citas/disponibilidad?fecha=${fecha}&profesional=${encodeURIComponent(profesional)}&servicio=${encodeURIComponent(servicio)}`)
+                .then(res => res.json())
+                .then(data => {
+                    selectHora.innerHTML = '';
+                    if (!data.disponible || !data.slots || data.slots.length === 0) {
+                        selectHora.innerHTML = '<option value="">No hay horarios disponibles</option>';
+                        if (info) info.textContent = data.motivo_cierre || 'No hay horarios disponibles en esta fecha.';
+                        mostrarAlertaAzulLanding('El horario ya no se encuentra disponible.', data.motivo_cierre || 'Por favor selecciona otra fecha o profesional.');
+                    } else {
+                        if (info) info.textContent = `${data.slots.length} turnos disponibles respetando recesos y anticipación mínima.`;
+                        data.slots.forEach(slot => {
+                            const opt = document.createElement('option');
+                            opt.value = slot;
+                            opt.textContent = slot;
+                            selectHora.appendChild(opt);
+                        });
+                    }
+                })
+                .catch(() => {
+                    selectHora.innerHTML = '<option value="">Error al cargar turnos</option>';
+                });
+        }
+
+        // Modal azul de alerta (R-32)
+        function mostrarAlertaAzulLanding(mensaje, detalle = '') {
+            const modal = document.getElementById('modalAlertaAzulLanding');
+            if (modal) {
+                document.getElementById('alertaAzulTextoLanding').innerText = mensaje || 'El horario ya no se encuentra disponible.';
+                document.getElementById('alertaAzulDetalleLanding').innerText = detalle || '';
+                modal.style.display = 'flex';
+                modal.classList.add('active');
+            }
+        }
+
+        function closeAlertaAzulLanding() {
+            const modal = document.getElementById('modalAlertaAzulLanding');
+            if (modal) {
+                modal.style.display = 'none';
+                modal.classList.remove('active');
+            }
         }
 
         function prefillAndOpenSchedule(serviceName) {
@@ -2179,6 +2239,16 @@
         }
 
         function prefillDoctorSchedule(doctorName) {
+            const docSelect = document.getElementById('profesional');
+            if (docSelect) {
+                for (let i = 0; i < docSelect.options.length; i++) {
+                    if (docSelect.options[i].value === doctorName || docSelect.options[i].text.includes(doctorName)) {
+                        docSelect.selectedIndex = i;
+                        break;
+                    }
+                }
+            }
+
             const motivoInput = document.getElementById('motivo');
             if (motivoInput) {
                 motivoInput.value = 'Solicito consulta con: ' + doctorName + '. ';
@@ -2246,8 +2316,51 @@
         window.addEventListener('click', function(e) {
             if (e.target.classList.contains('modal-overlay')) {
                 e.target.classList.remove('active');
+                e.target.style.display = 'none';
             }
         });
+
+        // Mostrar alerta azul si el backend notificó no disponibilidad (R-32)
+        @if(session('horario_no_disponible_alerta'))
+            window.addEventListener('DOMContentLoaded', function() {
+                mostrarAlertaAzulLanding(
+                    @json(session('horario_no_disponible_alerta')['mensaje']),
+                    @json(session('horario_no_disponible_alerta')['detalle'] ?? '')
+                );
+            });
+        @endif
+
+        @if(session('alerta_error_general'))
+            window.addEventListener('DOMContentLoaded', function() {
+                alert(@json(session('alerta_error_general')));
+            });
+        @endif
     </script>
+
+    <!-- =====================================================================
+         R-32 REQUISITO VISUAL EXPLÍCITO:
+         "emergerá una ventana de color azul con icono de alerta blanco notificando
+         que el horario ya no se encuentra disponible."
+         ===================================================================== -->
+    <div id="modalAlertaAzulLanding" class="modal-overlay" style="z-index: 99999; display: none;">
+        <div style="background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%); color: white; padding: 2.2rem 2.5rem; border-radius: 16px; box-shadow: 0 25px 50px -12px rgba(29, 78, 216, 0.5); max-width: 460px; width: 100%; border: 2px solid rgba(255, 255, 255, 0.2); text-align: center; margin: auto;">
+            <div style="width: 80px; height: 80px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.2rem auto; border: 2px solid rgba(255,255,255,0.5);">
+                <i class="fa-solid fa-triangle-exclamation" style="font-size: 3rem; color: #ffffff;"></i>
+            </div>
+            <h3 style="color: #ffffff; font-size: 1.5rem; margin: 0 0 8px 0; font-weight: 700;">
+                ¡Horario No Disponible!
+            </h3>
+            <p id="alertaAzulTextoLanding" style="color: #e0f2fe; font-size: 1.05rem; line-height: 1.5; margin: 0;">
+                El horario ya no se encuentra disponible.
+            </p>
+            <p id="alertaAzulDetalleLanding" style="color: #bae6fd; font-size: 0.88rem; margin-top: 10px; font-style: italic;">
+            </p>
+            <div style="margin-top: 1.5rem;">
+                <button type="button" onclick="closeAlertaAzulLanding()" style="background: #ffffff; color: #1d4ed8; border: none; padding: 0.8rem 1.8rem; font-size: 0.95rem; font-weight: 700; border-radius: 8px; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+                    <i class="fa-solid fa-arrow-rotate-left"></i> Entendido, Elegir Otro Horario
+                </button>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

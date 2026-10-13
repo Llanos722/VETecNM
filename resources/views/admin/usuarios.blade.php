@@ -41,7 +41,9 @@
                         </td>
                         <td>
                             @if($u->rol === 'admin')
-                                <span class="admin-badge"><i class="fa-solid fa-shield"></i> {{ ucfirst($u->rol) }}</span>
+                                <span class="admin-badge"><i class="fa-solid fa-shield"></i> Administrador</span>
+                            @elseif($u->rol === 'recepcionista')
+                                <span class="admin-badge" style="background: #ede9fe; color: #6d28d9;"><i class="fa-solid fa-headset"></i> Recepcionista</span>
                             @else
                                 <span class="status-badge status-Pendiente" style="background: #f1f5f9; color: #475569;">{{ ucfirst($u->rol) }}</span>
                             @endif
@@ -108,6 +110,7 @@
                     <label for="rol">Rol de Sistema *</label>
                     <select name="rol" id="rol" required>
                         <option value="cliente" selected>Cliente</option>
+                        <option value="recepcionista">Recepcionista</option>
                         <option value="admin">Administrador</option>
                     </select>
                 </div>
@@ -149,6 +152,7 @@
                     <label for="edit_rol">Rol de Sistema *</label>
                     <select name="rol" id="edit_rol" required>
                         <option value="cliente">Cliente</option>
+                        <option value="recepcionista">Recepcionista</option>
                         <option value="admin">Administrador</option>
                     </select>
                 </div>

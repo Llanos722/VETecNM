@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\CitaService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
@@ -211,7 +213,18 @@ class AuthController extends Controller
             $citasQuery->where('mascotas.id_usuario', $userId);
         }
 
-        $citas = $citasQuery->orderBy('citas.fecha', 'asc')->get();
+        $citas = $citasQuery->orderBy('citas.fecha', 'asc')
+            ->orderBy('citas.hora', 'asc')
+            ->get();
+
+        $profesionales = CitaService::getProfesionales();
+
+        $serviciosPorCategoria = CitaService::getServiciosPorCategoria();
+        $serviciosLista = CitaService::getServicios();
+        $serviciosDisponibles = [];
+        foreach ($serviciosPorCategoria as $catName => $items) {
+            $serviciosDisponibles[$catName] = array_column($items, 'nombre');
+        }
 
         return view('dashboard', compact(
             'totalUsuarios',
@@ -220,8 +233,108 @@ class AuthController extends Controller
             'totalProductos',
             'totalCitas',
             'misMascotas',
-            'citas'
+            'citas',
+            'profesionales',
+            'serviciosDisponibles',
+            'serviciosPorCategoria',
+            'serviciosLista'
         ));
+    }
+
+    /**
+     * Agendamiento de citas para clientes registrados (R-30, R-31, R-32).
+     */
+    public function agendarCitaCliente(Request $request)
+    {
+        if (! session()->has('user_id')) {
+            return redirect()->route('login');
+        }
+
+        $userId = session('user_id');
+
+        $request->validate([
+            'id_mascota' => 'required|exists:mascotas,id_mascota',
+            'servicio' => 'required|string|max:150',
+            'profesional' => 'required|string|max:150',
+            'fecha' => 'required|date|after_or_equal:today',
+            'hora' => 'required|string',
+            'motivo' => 'nullable|string|max:255',
+        ], [
+            'id_mascota.required' => 'Selecciona la mascota que asistirá a la cita.',
+            'servicio.required' => 'Selecciona el servicio médico o estético deseado.',
+            'profesional.required' => 'Selecciona el profesional de salud/estética.',
+            'fecha.required' => 'Selecciona la fecha de la cita.',
+            'fecha.after_or_equal' => 'La fecha no puede ser anterior al día de hoy.',
+            'hora.required' => 'Selecciona el horario deseado.',
+        ]);
+
+        // Verificar que la mascota pertenezca al usuario logueado (o si es admin)
+        $mascota = DB::table('mascotas')
+            ->where('id_mascota', $request->id_mascota)
+            ->where('id_usuario', $userId)
+            ->first();
+
+        if (! $mascota && session('user_rol') !== 'admin') {
+            return redirect()->back()->with('error', 'La mascota seleccionada no corresponde a tu cuenta.');
+        }
+
+        // 1. RESTRICCIÓN DE TIEMPO: No permitir hora pasada ni con menos de 30 minutos de anticipación
+        try {
+            CitaService::validarTiempoMinimo($request->fecha, $request->hora);
+        } catch (ValidationException $e) {
+            return redirect()->back()
+                ->withInput()
+                ->with('horario_no_disponible_alerta', [
+                    'mensaje' => 'El horario seleccionado ya no se encuentra disponible.',
+                    'detalle' => $e->validator->errors()->first('hora'),
+                ]);
+        }
+
+        // 2. VALIDACIÓN DE DISPONIBILIDAD DEL TRABAJADOR (R-32): Evitar citas simultáneas y bloqueos
+        $profesional = trim($request->profesional);
+        $dispTrabajador = CitaService::verificarDisponibilidadTrabajador($profesional, $request->fecha, $request->hora);
+        if (! $dispTrabajador['disponible']) {
+            return redirect()->back()
+                ->withInput()
+                ->with('horario_no_disponible_alerta', [
+                    'mensaje' => 'El horario ya no se encuentra disponible.',
+                    'detalle' => $dispTrabajador['mensaje'] ?? 'El profesional ya tiene una cita asignada en ese horario.',
+                ]);
+        }
+
+        // 3. RESTRICCIÓN DE DUPLICADOS: No duplicar cita por mismo motivo, hora y mascota
+        $motivoCompleto = trim($request->servicio);
+        if ($request->filled('motivo')) {
+            $motivoCompleto .= ' - '.trim($request->motivo);
+        }
+
+        try {
+            CitaService::validarDuplicado((int) $request->id_mascota, $request->fecha, $request->hora, $motivoCompleto, $request->servicio);
+        } catch (ValidationException $e) {
+            return redirect()->back()
+                ->withInput()
+                ->with('alerta_error_general', $e->validator->errors()->first('duplicado'));
+        }
+
+        // Obtener teléfono del usuario para la cita
+        $userObj = DB::table('usuarios')->where('id_usuario', $userId)->first();
+        $horaFormateada = strlen($request->hora) === 5 ? $request->hora.':00' : $request->hora;
+
+        DB::table('citas')->insert([
+            'id_mascota' => $request->id_mascota,
+            'fecha' => $request->fecha,
+            'hora' => $horaFormateada,
+            'servicio' => trim($request->servicio),
+            'profesional' => $profesional,
+            'telefono_contacto' => $userObj->telefono ?? null,
+            'motivo' => $motivoCompleto,
+            'estado' => 'Pendiente',
+            'canal' => 'web',
+            'notas' => $request->motivo ? trim($request->motivo) : null,
+            'fecha_creacion' => now(),
+        ]);
+
+        return redirect()->route('dashboard')->with('success', '¡Cita médica agendada exitosamente!');
     }
 
     /**

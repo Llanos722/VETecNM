@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\CitaService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Validation\ValidationException;
 
 class AdminController extends Controller
 {
@@ -54,7 +56,7 @@ class AdminController extends Controller
     }
 
     /* =========================================================================
-     * GESTIÓN DE CITAS MÉDICAS
+     * GESTIÓN DE CITAS MÉDICAS & AGENDAMIENTO PRESENCIAL (R-30, R-31, R-32, R-33)
      * ========================================================================= */
 
     public function citasIndex(Request $request)
@@ -70,7 +72,8 @@ class AdminController extends Controller
                 'mascotas.especie',
                 'mascotas.raza',
                 'usuarios.nombre as dueno_nombre',
-                'usuarios.email as dueno_email'
+                'usuarios.email as dueno_email',
+                'usuarios.telefono as dueno_telefono'
             );
 
         if ($estadoFilter && in_array($estadoFilter, ['Pendiente', 'Confirmada', 'Finalizada', 'Cancelada'])) {
@@ -83,11 +86,34 @@ class AdminController extends Controller
 
         $mascotas = DB::table('mascotas')
             ->join('usuarios', 'mascotas.id_usuario', '=', 'usuarios.id_usuario')
-            ->select('mascotas.*', 'usuarios.nombre as dueno_nombre')
+            ->select('mascotas.*', 'usuarios.nombre as dueno_nombre', 'usuarios.email as dueno_email', 'usuarios.telefono as dueno_telefono')
             ->orderBy('mascotas.nombre', 'asc')
             ->get();
 
-        return view('admin.citas', compact('citas', 'mascotas', 'estadoFilter'));
+        $clientes = DB::table('usuarios')
+            ->whereIn('rol', ['cliente'])
+            ->orderBy('nombre', 'asc')
+            ->get();
+
+        $profesionales = CitaService::getProfesionales();
+
+        $serviciosPorCategoria = CitaService::getServiciosPorCategoria();
+        $serviciosLista = CitaService::getServicios();
+        $serviciosDisponibles = [];
+        foreach ($serviciosPorCategoria as $catName => $items) {
+            $serviciosDisponibles[$catName] = array_column($items, 'nombre');
+        }
+
+        return view('admin.citas', compact(
+            'citas',
+            'mascotas',
+            'clientes',
+            'profesionales',
+            'serviciosDisponibles',
+            'serviciosPorCategoria',
+            'serviciosLista',
+            'estadoFilter'
+        ));
     }
 
     public function citasStore(Request $request)
@@ -96,20 +122,187 @@ class AdminController extends Controller
             'id_mascota' => 'required|exists:mascotas,id_mascota',
             'fecha' => 'required|date',
             'hora' => 'required',
+            'servicio' => 'nullable|string|max:150',
+            'precio' => 'nullable|numeric|min:0',
+            'profesional' => 'nullable|string|max:150',
+            'canal' => 'nullable|in:web,presencial,telefono',
             'motivo' => 'required|string|max:255',
             'estado' => 'required|in:Pendiente,Confirmada,Finalizada,Cancelada',
         ]);
 
+        // 1. RESTRICCIÓN DE TIEMPO: No permitir hora pasada ni con menos de 30 minutos de anticipación
+        try {
+            CitaService::validarTiempoMinimo($request->fecha, $request->hora);
+        } catch (ValidationException $e) {
+            return redirect()->back()
+                ->withInput()
+                ->with('horario_no_disponible_alerta', [
+                    'mensaje' => 'El horario seleccionado ya no se encuentra disponible.',
+                    'detalle' => $e->validator->errors()->first('hora'),
+                ]);
+        }
+
+        // 2. VALIDACIÓN DE DISPONIBILIDAD DEL TRABAJADOR (R-32): Evitar citas simultáneas
+        $profesional = $request->filled('profesional') ? trim($request->profesional) : null;
+        $dispTrabajador = CitaService::verificarDisponibilidadTrabajador($profesional, $request->fecha, $request->hora);
+        if (! $dispTrabajador['disponible']) {
+            return redirect()->back()
+                ->withInput()
+                ->with('horario_no_disponible_alerta', [
+                    'mensaje' => 'El horario ya no se encuentra disponible.',
+                    'detalle' => $dispTrabajador['mensaje'] ?? 'El profesional ya tiene una cita asignada en ese horario.',
+                ]);
+        }
+
+        // 3. RESTRICCIÓN DE DUPLICADOS: No duplicar cita por mismo motivo, hora y mascota
+        try {
+            CitaService::validarDuplicado((int) $request->id_mascota, $request->fecha, $request->hora, trim($request->motivo), $request->servicio);
+        } catch (ValidationException $e) {
+            return redirect()->back()
+                ->withInput()
+                ->with('alerta_error_general', $e->validator->errors()->first('duplicado'));
+        }
+
+        $horaFormateada = strlen($request->hora) === 5 ? $request->hora.':00' : $request->hora;
+        $precio = $request->filled('precio') ? (float) $request->precio : CitaService::getPrecioServicio($request->servicio);
+
         DB::table('citas')->insert([
             'id_mascota' => $request->id_mascota,
             'fecha' => $request->fecha,
-            'hora' => $request->hora,
+            'hora' => $horaFormateada,
+            'servicio' => $request->servicio ? trim($request->servicio) : null,
+            'precio' => $precio,
+            'profesional' => $profesional,
+            'canal' => $request->canal ?? 'presencial',
             'motivo' => trim($request->motivo),
             'estado' => $request->estado,
+            'notas' => $request->notas ? trim($request->notas) : null,
             'fecha_creacion' => now(),
         ]);
 
         return redirect()->route('admin.citas.index')->with('success', 'Cita médica agendada exitosamente.');
+    }
+
+    /**
+     * Agendamiento presencial o telefónico por Recepcionista (R-33, R-31, R-32).
+     */
+    public function citasPresencialStore(Request $request)
+    {
+        $request->validate([
+            'canal' => 'required|in:presencial,telefono',
+            'servicio' => 'required|string|max:150',
+            'precio' => 'nullable|numeric|min:0',
+            'profesional' => 'required|string|max:150',
+            'fecha' => 'required|date',
+            'hora' => 'required',
+            'motivo' => 'required|string|max:255',
+            'notas' => 'nullable|string|max:500',
+        ]);
+
+        // Determinar o registrar cliente
+        $userId = null;
+        if ($request->filled('id_usuario')) {
+            $userId = (int) $request->id_usuario;
+        } else {
+            // Registro rápido de cliente en ventanilla o llamada
+            $request->validate([
+                'cliente_nombre' => 'required|string|max:100',
+                'cliente_telefono' => 'required|string|max:20',
+            ]);
+
+            $clienteEmail = $request->filled('cliente_email')
+                ? strtolower(trim($request->cliente_email))
+                : 'cliente_'.time().'@vetecnm.local';
+
+            $userExistente = DB::table('usuarios')->where('telefono', trim($request->cliente_telefono))->first();
+
+            if ($userExistente) {
+                $userId = $userExistente->id_usuario;
+            } else {
+                $userId = DB::table('usuarios')->insertGetId([
+                    'nombre' => trim($request->cliente_nombre),
+                    'email' => $clienteEmail,
+                    'telefono' => trim($request->cliente_telefono),
+                    'password' => Hash::make('cliente_'.time()),
+                    'rol' => 'cliente',
+                    'fecha_registro' => now(),
+                ]);
+            }
+        }
+
+        // Determinar o registrar mascota
+        $mascotaId = null;
+        if ($request->filled('id_mascota')) {
+            $mascotaId = (int) $request->id_mascota;
+        } else {
+            $request->validate([
+                'mascota_nombre' => 'required|string|max:100',
+                'mascota_especie' => 'required|string|max:50',
+            ]);
+
+            $mascotaId = DB::table('mascotas')->insertGetId([
+                'id_usuario' => $userId,
+                'nombre' => trim($request->mascota_nombre),
+                'especie' => trim($request->mascota_especie),
+                'raza' => $request->filled('mascota_raza') ? trim($request->mascota_raza) : null,
+            ]);
+        }
+
+        // 1. RESTRICCIÓN DE TIEMPO: No permitir hora pasada ni con menos de 30 minutos de anticipación
+        try {
+            CitaService::validarTiempoMinimo($request->fecha, $request->hora);
+        } catch (ValidationException $e) {
+            return redirect()->back()
+                ->withInput()
+                ->with('horario_no_disponible_alerta', [
+                    'mensaje' => 'El horario seleccionado ya no se encuentra disponible.',
+                    'detalle' => $e->validator->errors()->first('hora'),
+                ]);
+        }
+
+        // 2. VALIDACIÓN DE DISPONIBILIDAD DEL TRABAJADOR (R-32): Evitar citas simultáneas
+        $profesional = trim($request->profesional);
+        $dispTrabajador = CitaService::verificarDisponibilidadTrabajador($profesional, $request->fecha, $request->hora);
+        if (! $dispTrabajador['disponible']) {
+            return redirect()->back()
+                ->withInput()
+                ->with('horario_no_disponible_alerta', [
+                    'mensaje' => 'El horario ya no se encuentra disponible.',
+                    'detalle' => $dispTrabajador['mensaje'] ?? 'El profesional ya tiene una cita asignada en ese horario.',
+                ]);
+        }
+
+        // 3. RESTRICCIÓN DE DUPLICADOS: No duplicar cita por mismo motivo, hora y mascota
+        try {
+            CitaService::validarDuplicado($mascotaId, $request->fecha, $request->hora, trim($request->motivo), $request->servicio);
+        } catch (ValidationException $e) {
+            return redirect()->back()
+                ->withInput()
+                ->with('alerta_error_general', $e->validator->errors()->first('duplicado'));
+        }
+
+        $userObj = DB::table('usuarios')->where('id_usuario', $userId)->first();
+        $horaFormateada = strlen($request->hora) === 5 ? $request->hora.':00' : $request->hora;
+        $precio = $request->filled('precio') ? (float) $request->precio : CitaService::getPrecioServicio($request->servicio);
+
+        DB::table('citas')->insert([
+            'id_mascota' => $mascotaId,
+            'fecha' => $request->fecha,
+            'hora' => $horaFormateada,
+            'servicio' => trim($request->servicio),
+            'precio' => $precio,
+            'profesional' => $profesional,
+            'canal' => $request->canal,
+            'telefono_contacto' => $userObj->telefono ?? null,
+            'motivo' => trim($request->motivo),
+            'estado' => 'Confirmada', // En recepción se marca directamente como confirmada
+            'notas' => $request->notas ? trim($request->notas) : null,
+            'fecha_creacion' => now(),
+        ]);
+
+        $canalTexto = $request->canal === 'presencial' ? 'en ventanilla' : 'por teléfono';
+
+        return redirect()->route('admin.citas.index')->with('success', "Cita solicitada {$canalTexto} registrada exitosamente.");
     }
 
     public function citasUpdate(Request $request, $id)
@@ -118,16 +311,61 @@ class AdminController extends Controller
             'id_mascota' => 'required|exists:mascotas,id_mascota',
             'fecha' => 'required|date',
             'hora' => 'required',
+            'servicio' => 'nullable|string|max:150',
+            'precio' => 'nullable|numeric|min:0',
+            'profesional' => 'nullable|string|max:150',
+            'canal' => 'nullable|in:web,presencial,telefono',
             'motivo' => 'required|string|max:255',
             'estado' => 'required|in:Pendiente,Confirmada,Finalizada,Cancelada',
         ]);
 
+        // 1. RESTRICCIÓN DE TIEMPO
+        try {
+            CitaService::validarTiempoMinimo($request->fecha, $request->hora);
+        } catch (ValidationException $e) {
+            return redirect()->back()
+                ->withInput()
+                ->with('horario_no_disponible_alerta', [
+                    'mensaje' => 'El horario seleccionado ya no se encuentra disponible.',
+                    'detalle' => $e->validator->errors()->first('hora'),
+                ]);
+        }
+
+        // 2. VALIDACIÓN DE DISPONIBILIDAD DEL TRABAJADOR (excluyendo la cita actual)
+        $profesional = $request->filled('profesional') ? trim($request->profesional) : null;
+        $dispTrabajador = CitaService::verificarDisponibilidadTrabajador($profesional, $request->fecha, $request->hora, (int) $id);
+        if (! $dispTrabajador['disponible']) {
+            return redirect()->back()
+                ->withInput()
+                ->with('horario_no_disponible_alerta', [
+                    'mensaje' => 'El horario ya no se encuentra disponible.',
+                    'detalle' => $dispTrabajador['mensaje'] ?? 'El profesional ya tiene una cita asignada en ese horario.',
+                ]);
+        }
+
+        // 3. RESTRICCIÓN DE DUPLICADOS (excluyendo la cita actual)
+        try {
+            CitaService::validarDuplicado((int) $request->id_mascota, $request->fecha, $request->hora, trim($request->motivo), $request->servicio, (int) $id);
+        } catch (ValidationException $e) {
+            return redirect()->back()
+                ->withInput()
+                ->with('alerta_error_general', $e->validator->errors()->first('duplicado'));
+        }
+
+        $horaFormateada = strlen($request->hora) === 5 ? $request->hora.':00' : $request->hora;
+        $precio = $request->filled('precio') ? (float) $request->precio : CitaService::getPrecioServicio($request->servicio);
+
         DB::table('citas')->where('id_cita', $id)->update([
             'id_mascota' => $request->id_mascota,
             'fecha' => $request->fecha,
-            'hora' => $request->hora,
+            'hora' => $horaFormateada,
+            'servicio' => $request->servicio ? trim($request->servicio) : null,
+            'precio' => $precio,
+            'profesional' => $profesional,
+            'canal' => $request->canal ?? 'presencial',
             'motivo' => trim($request->motivo),
             'estado' => $request->estado,
+            'notas' => $request->notas ? trim($request->notas) : null,
         ]);
 
         return redirect()->route('admin.citas.index')->with('success', 'Cita médica actualizada correctamente.');
@@ -241,7 +479,7 @@ class AdminController extends Controller
             'email' => 'required|email|max:100|unique:usuarios,email',
             'telefono' => 'nullable|string|max:20',
             'password' => 'required|string|min:6',
-            'rol' => 'required|in:cliente,admin',
+            'rol' => 'required|in:cliente,admin,recepcionista',
         ]);
 
         $userData = [
@@ -267,7 +505,7 @@ class AdminController extends Controller
             'nombre' => 'required|string|max:100',
             'email' => 'required|email|max:100|unique:usuarios,email,'.$id.',id_usuario',
             'telefono' => 'nullable|string|max:20',
-            'rol' => 'required|in:cliente,admin',
+            'rol' => 'required|in:cliente,admin,recepcionista',
             'password' => 'nullable|string|min:6',
         ]);
 
@@ -410,5 +648,237 @@ class AdminController extends Controller
         DB::table('productos')->where('id_producto', $id)->delete();
 
         return redirect()->route('admin.productos.index')->with('success', 'Producto eliminado.');
+    }
+
+    /* =========================================================================
+     * CONFIGURACIÓN DE HORARIOS, RECESOS, DÍAS NO LABORABLES Y BLOQUEOS (R-34)
+     * ========================================================================= */
+
+    public function horariosIndex()
+    {
+        $horarios = DB::table('configuracion_horarios')
+            ->orderBy('dia_semana', 'asc')
+            ->get();
+
+        $recesos = DB::table('horarios_recesos')
+            ->orderBy('hora_inicio', 'asc')
+            ->get();
+
+        $diasNoLaborables = DB::table('dias_no_laborables')
+            ->orderBy('fecha', 'asc')
+            ->get();
+
+        $bloqueos = DB::table('bloqueos_personal')
+            ->orderBy('fecha', 'desc')
+            ->get();
+
+        $profesionales = CitaService::getProfesionales();
+
+        return view('admin.horarios', compact(
+            'horarios',
+            'recesos',
+            'diasNoLaborables',
+            'bloqueos',
+            'profesionales'
+        ));
+    }
+
+    public function horariosAtencionUpdate(Request $request)
+    {
+        $request->validate([
+            'horarios' => 'required|array',
+            'horarios.*.id' => 'required|exists:configuracion_horarios,id',
+            'horarios.*.hora_apertura' => 'required',
+            'horarios.*.hora_cierre' => 'required',
+            'horarios.*.intervalo_minutos' => 'required|integer|min:15|max:120',
+        ]);
+
+        foreach ($request->horarios as $item) {
+            DB::table('configuracion_horarios')
+                ->where('id', $item['id'])
+                ->update([
+                    'hora_apertura' => $item['hora_apertura'],
+                    'hora_cierre' => $item['hora_cierre'],
+                    'intervalo_minutos' => (int) $item['intervalo_minutos'],
+                    'activo' => isset($item['activo']) ? true : false,
+                    'updated_at' => now(),
+                ]);
+        }
+
+        return redirect()->route('admin.horarios.index')->with('success', 'Horarios de atención de la clínica actualizados correctamente.');
+    }
+
+    public function recesosStore(Request $request)
+    {
+        $request->validate([
+            'nombre' => 'required|string|max:100',
+            'hora_inicio' => 'required',
+            'hora_fin' => 'required',
+            'aplica_a' => 'required|string|max:150',
+        ]);
+
+        DB::table('horarios_recesos')->insert([
+            'nombre' => trim($request->nombre),
+            'hora_inicio' => $request->hora_inicio,
+            'hora_fin' => $request->hora_fin,
+            'aplica_a' => trim($request->aplica_a),
+            'activo' => true,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        return redirect()->route('admin.horarios.index')->with('success', 'Receso laboral registrado exitosamente.');
+    }
+
+    public function recesosDestroy($id)
+    {
+        DB::table('horarios_recesos')->where('id', $id)->delete();
+
+        return redirect()->route('admin.horarios.index')->with('success', 'Receso eliminado.');
+    }
+
+    public function diasNoLaborablesStore(Request $request)
+    {
+        $request->validate([
+            'fecha' => 'required|date',
+            'motivo' => 'required|string|max:255',
+        ]);
+
+        DB::table('dias_no_laborables')->insert([
+            'fecha' => $request->fecha,
+            'motivo' => trim($request->motivo),
+            'activo' => true,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        return redirect()->route('admin.horarios.index')->with('success', 'Día no laborable registrado exitosamente.');
+    }
+
+    public function diasNoLaborablesDestroy($id)
+    {
+        DB::table('dias_no_laborables')->where('id', $id)->delete();
+
+        return redirect()->route('admin.horarios.index')->with('success', 'Día no laborable eliminado.');
+    }
+
+    public function bloqueosPersonalStore(Request $request)
+    {
+        $request->validate([
+            'profesional' => 'required|string|max:150',
+            'fecha' => 'required|date',
+            'tipo_bloqueo' => 'required|in:completo,parcial',
+            'hora_inicio' => 'nullable|required_if:tipo_bloqueo,parcial',
+            'hora_fin' => 'nullable|required_if:tipo_bloqueo,parcial',
+            'motivo' => 'required|string|max:255',
+        ]);
+
+        $horaInicio = $request->tipo_bloqueo === 'parcial' ? $request->hora_inicio : null;
+        $horaFin = $request->tipo_bloqueo === 'parcial' ? $request->hora_fin : null;
+
+        DB::table('bloqueos_personal')->insert([
+            'profesional' => trim($request->profesional),
+            'fecha' => $request->fecha,
+            'hora_inicio' => $horaInicio,
+            'hora_fin' => $horaFin,
+            'motivo' => trim($request->motivo),
+            'activo' => true,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        return redirect()->route('admin.horarios.index')->with('success', 'Bloqueo de disponibilidad del personal registrado.');
+    }
+
+    public function bloqueosPersonalDestroy($id)
+    {
+        DB::table('bloqueos_personal')->where('id', $id)->delete();
+
+        return redirect()->route('admin.horarios.index')->with('success', 'Bloqueo de personal eliminado.');
+    }
+
+    /**
+     * =========================================================================
+     * CATÁLOGO Y PRECIOS POR SERVICIO
+     * =========================================================================
+     */
+    public function serviciosIndex()
+    {
+        $servicios = DB::table('servicios')->orderBy('categoria')->orderBy('nombre')->get();
+        $categorias = DB::table('servicios')->select('categoria')->distinct()->pluck('categoria');
+
+        return view('admin.servicios', compact('servicios', 'categorias'));
+    }
+
+    public function serviciosStore(Request $request)
+    {
+        $request->validate([
+            'categoria' => 'required|string|max:100',
+            'nombre' => 'required|string|max:150|unique:servicios,nombre',
+            'precio' => 'required|numeric|min:0',
+            'precio_texto' => 'nullable|string|max:100',
+            'duracion' => 'nullable|string|max:50',
+            'incluye' => 'nullable|string|max:500',
+            'descripcion' => 'nullable|string|max:500',
+        ]);
+
+        $precioTexto = $request->precio_texto ?: ('$'.number_format($request->precio, 2).' MXN');
+
+        DB::table('servicios')->insert([
+            'categoria' => trim($request->categoria),
+            'nombre' => trim($request->nombre),
+            'precio' => $request->precio,
+            'precio_texto' => $precioTexto,
+            'duracion' => $request->duracion ? trim($request->duracion) : '30 min',
+            'incluye' => $request->incluye ? trim($request->incluye) : null,
+            'descripcion' => $request->descripcion ? trim($request->descripcion) : null,
+            'activo' => true,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        return redirect()->route('admin.servicios.index')->with('success', 'Servicio registrado exitosamente.');
+    }
+
+    public function serviciosUpdate(Request $request, $id)
+    {
+        $request->validate([
+            'categoria' => 'required|string|max:100',
+            'nombre' => 'required|string|max:150|unique:servicios,nombre,'.$id.',id_servicio',
+            'precio' => 'required|numeric|min:0',
+            'precio_texto' => 'nullable|string|max:100',
+            'duracion' => 'nullable|string|max:50',
+            'incluye' => 'nullable|string|max:500',
+            'descripcion' => 'nullable|string|max:500',
+        ]);
+
+        $precioTexto = $request->precio_texto ?: ('$'.number_format($request->precio, 2).' MXN');
+
+        DB::table('servicios')->where('id_servicio', $id)->update([
+            'categoria' => trim($request->categoria),
+            'nombre' => trim($request->nombre),
+            'precio' => $request->precio,
+            'precio_texto' => $precioTexto,
+            'duracion' => $request->duracion ? trim($request->duracion) : null,
+            'incluye' => $request->incluye ? trim($request->incluye) : null,
+            'descripcion' => $request->descripcion ? trim($request->descripcion) : null,
+            'activo' => $request->has('activo') ? (bool) $request->activo : true,
+            'updated_at' => now(),
+        ]);
+
+        return redirect()->route('admin.servicios.index')->with('success', 'Precio y detalles del servicio actualizados exitosamente.');
+    }
+
+    public function serviciosToggle($id)
+    {
+        $srv = DB::table('servicios')->where('id_servicio', $id)->first();
+        if ($srv) {
+            DB::table('servicios')->where('id_servicio', $id)->update([
+                'activo' => ! $srv->activo,
+                'updated_at' => now(),
+            ]);
+        }
+
+        return redirect()->route('admin.servicios.index')->with('success', 'Estado de disponibilidad del servicio actualizado.');
     }
 }

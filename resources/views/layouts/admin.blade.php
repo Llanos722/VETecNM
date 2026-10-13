@@ -367,6 +367,13 @@
                     <i class="fa-solid fa-users"></i> Usuarios
                 </a>
             </li>
+            @if(session('user_rol') === 'admin')
+            <li>
+                <a href="{{ route('admin.horarios.index') }}" class="{{ request()->routeIs('admin.horarios.*') ? 'active' : '' }}">
+                    <i class="fa-solid fa-clock"></i> Horarios & Disponibilidad
+                </a>
+            </li>
+            @endif
             <li>
                 <a href="{{ route('admin.productos.index') }}" class="{{ request()->routeIs('admin.productos.*') ? 'active' : '' }}">
                     <i class="fa-solid fa-boxes-packing"></i> Catálogo & Productos

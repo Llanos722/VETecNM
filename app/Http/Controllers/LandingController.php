@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\CitaService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Validation\ValidationException;
 
 class LandingController extends Controller
 {
@@ -374,10 +376,13 @@ class LandingController extends Controller
             }
         }
 
+        $profesionalesList = CitaService::getProfesionales();
+
         return view('landing', compact(
             'clinicaInfo',
             'categoriasServicios',
             'personalMedico',
+            'profesionalesList',
             'diasSemana',
             'citasPorDia',
             'inicioSemana',
@@ -389,8 +394,27 @@ class LandingController extends Controller
     }
 
     /**
-     * Store appointment booked through the Landing Page (RF-05).
-     * Includes user phone and mandatory terms & conditions acceptance.
+     * Endpoint API para consultar horarios disponibles según fecha, profesional y servicio (R-31).
+     */
+    public function consultarDisponibilidad(Request $request)
+    {
+        $request->validate([
+            'fecha' => 'required|date',
+            'profesional' => 'nullable|string',
+            'servicio' => 'nullable|string',
+        ]);
+
+        $resultado = CitaService::obtenerHorariosDisponibles(
+            $request->query('fecha'),
+            $request->query('profesional'),
+            $request->query('servicio')
+        );
+
+        return response()->json($resultado);
+    }
+
+    /**
+     * Store appointment booked through the Landing Page (RF-05, R-30, R-31, R-32).
      */
     public function agendarCita(Request $request)
     {
@@ -401,6 +425,7 @@ class LandingController extends Controller
             'mascota_nombre' => 'required|string|max:100',
             'especie' => 'required|string|max:50',
             'servicio' => 'required|string|max:150',
+            'profesional' => 'nullable|string|max:150',
             'fecha' => 'required|date|after_or_equal:today',
             'hora' => 'required|string',
             'terms' => 'accepted',
@@ -418,11 +443,38 @@ class LandingController extends Controller
             'terms.accepted' => 'Debes aceptar los Términos, Condiciones y Protocolos de Acceso para agendar tu cita.',
         ]);
 
+        // 1. RESTRICCIÓN DE TIEMPO: La hora no debe haber pasado ni ser con menos de 30 minutos de anticipación
+        try {
+            CitaService::validarTiempoMinimo($request->fecha, $request->hora);
+        } catch (ValidationException $e) {
+            $msg = $e->validator->errors()->first('hora');
+
+            return redirect()->back()
+                ->withInput()
+                ->with('horario_no_disponible_alerta', [
+                    'mensaje' => 'El horario seleccionado ya no se encuentra disponible.',
+                    'detalle' => $msg,
+                ]);
+        }
+
+        // 2. VALIDACIÓN DE DISPONIBILIDAD DEL TRABAJADOR (R-32): Evitar citas simultáneas y bloqueos
+        $profesional = $request->filled('profesional') ? trim($request->profesional) : null;
+        $dispTrabajador = CitaService::verificarDisponibilidadTrabajador($profesional, $request->fecha, $request->hora);
+        if (! $dispTrabajador['disponible']) {
+            // R-32: Notificación ventana azul con icono blanco de alerta
+            return redirect()->back()
+                ->withInput()
+                ->with('horario_no_disponible_alerta', [
+                    'mensaje' => 'El horario ya no se encuentra disponible.',
+                    'detalle' => $dispTrabajador['mensaje'] ?? 'El profesional ya tiene una cita asignada en ese horario.',
+                ]);
+        }
+
         $inputEmail = strtolower(trim($request->email));
         $inputNombre = trim($request->nombre);
         $inputTelefono = trim($request->telefono);
 
-        // 1. Identificar o registrar al usuario
+        // 3. Identificar o registrar al usuario
         $usuario = DB::table('usuarios')->where('email', $inputEmail)->first();
 
         if (! $usuario) {
@@ -442,7 +494,6 @@ class LandingController extends Controller
         } else {
             $userId = $usuario->id_usuario;
 
-            // Actualizar teléfono si estaba vacío
             if (Schema::hasColumn('usuarios', 'telefono') && empty($usuario->telefono)) {
                 DB::table('usuarios')->where('id_usuario', $userId)->update([
                     'telefono' => $inputTelefono,
@@ -450,7 +501,7 @@ class LandingController extends Controller
             }
         }
 
-        // 2. Identificar o registrar la mascota del usuario
+        // 4. Identificar o registrar la mascota del usuario
         $mascotaNombre = trim($request->mascota_nombre);
         $especie = trim($request->especie);
 
@@ -471,18 +522,33 @@ class LandingController extends Controller
             $mascotaId = $mascota->id_mascota;
         }
 
-        // 3. Crear la Cita Médica
+        // 5. RESTRICCIÓN DE DUPLICADOS: Impedir cita duplicada por mismo motivo, hora y mascota
         $motivoCompleto = trim($request->servicio);
         if ($request->filled('motivo')) {
             $motivoCompleto .= ' - '.trim($request->motivo);
         }
 
+        try {
+            CitaService::validarDuplicado($mascotaId, $request->fecha, $request->hora, $motivoCompleto, $request->servicio);
+        } catch (ValidationException $e) {
+            return redirect()->back()
+                ->withInput()
+                ->with('alerta_error_general', $e->validator->errors()->first('duplicado'));
+        }
+
+        // 6. Crear la Cita Médica
+        $horaFormateada = strlen($request->hora) === 5 ? $request->hora.':00' : $request->hora;
+
         $citaData = [
             'id_mascota' => $mascotaId,
             'fecha' => $request->fecha,
-            'hora' => strlen($request->hora) === 5 ? $request->hora.':00' : $request->hora,
+            'hora' => $horaFormateada,
             'motivo' => $motivoCompleto,
             'estado' => 'Pendiente',
+            'servicio' => trim($request->servicio),
+            'profesional' => $profesional,
+            'canal' => 'web',
+            'notas' => $request->motivo ? trim($request->motivo) : null,
             'fecha_creacion' => now(),
         ];
 
@@ -497,6 +563,7 @@ class LandingController extends Controller
             'dueno' => $inputNombre,
             'telefono' => $inputTelefono,
             'servicio' => $request->servicio,
+            'profesional' => $profesional ?? 'Profesional asignado por clínica',
             'fecha' => Carbon::parse($request->fecha)->format('d/m/Y'),
             'hora' => substr($request->hora, 0, 5),
         ]);
@@ -520,6 +587,8 @@ class LandingController extends Controller
                 'citas.fecha',
                 'citas.hora',
                 'citas.motivo',
+                'citas.servicio',
+                'citas.profesional',
                 'citas.estado',
                 'mascotas.nombre as mascota_nombre',
                 'mascotas.especie'

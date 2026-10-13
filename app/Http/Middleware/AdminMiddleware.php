@@ -17,8 +17,15 @@ class AdminMiddleware
             return redirect()->route('login')->with('error', 'acceso_denegado');
         }
 
-        if (session('user_rol') !== 'admin') {
-            return redirect()->route('dashboard')->with('error', 'Acceso denegado. Solo los administradores pueden acceder a esta sección.');
+        $rol = session('user_rol');
+
+        if (! in_array($rol, ['admin', 'recepcionista'], true)) {
+            return redirect()->route('dashboard')->with('error', 'Acceso denegado. No tienes permisos para acceder al área administrativa o de recepción.');
+        }
+
+        // Restringir configuración del sistema y gestión de usuarios exclusivamente al Administrador
+        if ($rol === 'recepcionista' && ($request->is('admin/usuarios*') || $request->is('admin/horarios*'))) {
+            return redirect()->route('admin.citas.index')->with('error', 'Acceso restringido. Solo el Administrador puede configurar horarios y administrar usuarios.');
         }
 
         return $next($request);

@@ -42,11 +42,81 @@ class LandingFeaturesTest extends TestCase
                 fecha DATE NOT NULL,
                 hora TIME NOT NULL,
                 telefono_contacto VARCHAR(20),
+                servicio VARCHAR(150),
+                profesional VARCHAR(150),
                 motivo VARCHAR(255) NOT NULL,
                 estado VARCHAR(20) DEFAULT "Pendiente",
+                canal VARCHAR(30) DEFAULT "web",
+                notas TEXT,
                 fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         ');
+
+        DB::statement('
+            CREATE TABLE IF NOT EXISTS configuracion_horarios (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                dia_semana INTEGER,
+                dia_nombre VARCHAR(20),
+                hora_apertura TIME DEFAULT "08:00:00",
+                hora_cierre TIME DEFAULT "20:00:00",
+                intervalo_minutos INTEGER DEFAULT 30,
+                activo BOOLEAN DEFAULT 1,
+                created_at TIMESTAMP,
+                updated_at TIMESTAMP
+            )
+        ');
+
+        DB::statement('
+            CREATE TABLE IF NOT EXISTS horarios_recesos (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                nombre VARCHAR(100),
+                hora_inicio TIME DEFAULT "14:00:00",
+                hora_fin TIME DEFAULT "15:00:00",
+                aplica_a VARCHAR(150) DEFAULT "todos",
+                activo BOOLEAN DEFAULT 1,
+                created_at TIMESTAMP,
+                updated_at TIMESTAMP
+            )
+        ');
+
+        DB::statement('
+            CREATE TABLE IF NOT EXISTS dias_no_laborables (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                fecha DATE,
+                motivo VARCHAR(255),
+                activo BOOLEAN DEFAULT 1,
+                created_at TIMESTAMP,
+                updated_at TIMESTAMP
+            )
+        ');
+
+        DB::statement('
+            CREATE TABLE IF NOT EXISTS bloqueos_personal (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                profesional VARCHAR(150),
+                fecha DATE,
+                hora_inicio TIME,
+                hora_fin TIME,
+                motivo VARCHAR(255),
+                activo BOOLEAN DEFAULT 1,
+                created_at TIMESTAMP,
+                updated_at TIMESTAMP
+            )
+        ');
+
+        // Insertar horario por defecto si está vacío
+        if (DB::table('configuracion_horarios')->count() === 0) {
+            for ($d = 1; $d <= 7; $d++) {
+                DB::table('configuracion_horarios')->insert([
+                    'dia_semana' => $d,
+                    'dia_nombre' => 'Dia '.$d,
+                    'hora_apertura' => '08:00:00',
+                    'hora_cierre' => '20:00:00',
+                    'intervalo_minutos' => 30,
+                    'activo' => 1,
+                ]);
+            }
+        }
     }
 
     public function test_landing_page_renders_with_rf02_rf03_rf04_rf05(): void
