@@ -49,6 +49,12 @@
                 <i class="fa-regular fa-envelope icon-left"></i>
                 <input type="email" id="email" name="email" value="{{ old('email') }}" placeholder="Correo electrónico" required>
             </div>
+
+            <!-- Campo de Teléfono -->
+            <div class="input-wrapper">
+                <i class="fa-solid fa-phone icon-left"></i>
+                <input type="tel" id="telefono" name="telefono" value="{{ old('telefono') }}" placeholder="Teléfono de contacto (10 dígitos)" required pattern="[0-9]{10}">
+            </div>
             
             <!-- Campo de Contraseña -->
             <div class="input-wrapper">
@@ -63,6 +69,14 @@
                 <input type="password" id="password_confirmation" name="password_confirmation" placeholder="Confirmar contraseña" required>
                 <i class="fa-regular fa-eye icon-right" id="toggle-password-confirm"></i>
             </div>
+
+            <!-- Aceptar Términos y Condiciones -->
+            <div style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: 1.3rem; text-align: left; font-size: 0.88rem; color: #475569;">
+                <input type="checkbox" id="terms" name="terms" value="1" required style="margin-top: 3px; accent-color: var(--primary-color); width: 18px; height: 18px; cursor: pointer;">
+                <label for="terms" style="cursor: pointer; line-height: 1.4;">
+                    Acepto los <button type="button" onclick="openTermsModal()" style="background:none; border:none; color:var(--primary-color); font-weight:600; text-decoration:underline; cursor:pointer; padding:0; font-size:inherit;">Términos, Condiciones y Protocolos de Acceso</button> de la clínica VETecNM.
+                </label>
+            </div>
             
             <!-- Botón de registro -->
             <button type="submit" class="btn-primary">Registrarse</button>
@@ -73,6 +87,30 @@
                 <a href="{{ route('login') }}" class="btn-secondary">Iniciar sesión</a>
             </div>
         </form>
+    </div>
+
+    <!-- Modal de Términos y Condiciones -->
+    <div id="modalTerms" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.65); z-index: 2000; align-items: center; justify-content: center; padding: 1rem; backdrop-filter: blur(4px);">
+        <div style="background: white; border-radius: 14px; max-width: 550px; width: 100%; max-height: 85vh; overflow-y: auto; padding: 1.8rem; box-shadow: 0 20px 40px rgba(0,0,0,0.2); position: relative; text-align: left;">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.8rem; margin-bottom: 1.2rem;">
+                <h3 style="color: var(--primary-color); font-size: 1.25rem; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 8px;">
+                    <i class="fa-solid fa-file-contract"></i> Términos y Condiciones
+                </h3>
+                <button type="button" onclick="closeTermsModal()" style="background: #f1f5f9; border: none; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-size: 1.1rem; color: #64748b; display: flex; align-items: center; justify-content: center;">&times;</button>
+            </div>
+            <div style="color: #334155; font-size: 0.9rem; line-height: 1.6;">
+                <p style="margin-bottom: 0.8rem;"><strong>1. Compromiso de Datos:</strong> La información personal y de tus mascotas será resguardada con estricta confidencialidad para fines médicos y de contacto clínico.</p>
+                <p style="margin-bottom: 0.8rem;"><strong>2. Protocolos de Acceso (RF-02):</strong>
+                    <br>• <strong>Perros:</strong> Obligatorio ingresar con correa y collar seguro en todo momento dentro de las instalaciones. Perros reactivos deben portar bozal preventivo.
+                    <br>• <strong>Gatos y animales menores:</strong> Deberán ingresar exclusivamente dentro de una transportadora rígida y cerrada para su seguridad y evitar fugas.
+                </p>
+                <p style="margin-bottom: 0.8rem;"><strong>3. Citas y Puntualidad:</strong> Te pedimos acudir con 10 minutos de anticipación. Cancelaciones o reprogramaciones con al menos 2 horas de anticipación.</p>
+                <p style="margin-bottom: 0.8rem;"><strong>4. Acompañamiento:</strong> Se permite un máximo de un acompañante por mascota en el área de consultorios.</p>
+            </div>
+            <div style="margin-top: 1.5rem; text-align: right; border-top: 1px solid #e2e8f0; padding-top: 1rem;">
+                <button type="button" onclick="acceptTermsAndClose()" class="btn-primary" style="padding: 0.6rem 1.4rem; font-size: 0.9rem; width: auto; display: inline-block;">Entendido y Aceptar</button>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -95,6 +133,19 @@
             this.classList.toggle('fa-eye');
             this.classList.toggle('fa-eye-slash');
         });
+
+        function openTermsModal() {
+            document.getElementById('modalTerms').style.display = 'flex';
+        }
+
+        function closeTermsModal() {
+            document.getElementById('modalTerms').style.display = 'none';
+        }
+
+        function acceptTermsAndClose() {
+            document.getElementById('terms').checked = true;
+            closeTermsModal();
+        }
     </script>
 </body>
 </html>

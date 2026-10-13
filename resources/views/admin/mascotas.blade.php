@@ -38,7 +38,6 @@
                         <td>{{ $m->peso ? $m->peso.' kg' : 'N/A' }}</td>
                         <td>
                             <span>{{ $m->dueno_nombre }}</span>
-                            <br><span style="font-size: 0.78rem; color: #64748b;">{{ $m->dueno_email }}</span>
                         </td>
                         <td style="text-align: right; white-space: nowrap;">
                             <button class="btn-action btn-edit" onclick='openEditModal(@json($m))' title="Editar Mascota">
@@ -78,7 +77,7 @@
                 <select name="id_usuario" id="id_usuario" required>
                     <option value="">-- Seleccionar Cliente --</option>
                     @foreach($usuarios as $u)
-                        <option value="{{ $u->id_usuario }}">{{ $u->nombre }} ({{ $u->email }}) [{{ ucfirst($u->rol) }}]</option>
+                        <option value="{{ $u->id_usuario }}">{{ $u->nombre }}</option>
                     @endforeach
                 </select>
             </div>
@@ -131,7 +130,7 @@
                 <label for="edit_id_usuario">Dueño / Cliente *</label>
                 <select name="id_usuario" id="edit_id_usuario" required>
                     @foreach($usuarios as $u)
-                        <option value="{{ $u->id_usuario }}">{{ $u->nombre }} ({{ $u->email }})</option>
+                        <option value="{{ $u->id_usuario }}">{{ $u->nombre }}</option>
                     @endforeach
                 </select>
             </div>

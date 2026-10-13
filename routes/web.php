@@ -2,10 +2,21 @@
 
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\LandingController;
 use Illuminate\Support\Facades\Route;
 
-// Rutas públicas del proyecto VETecNM
-Route::get('/', [AuthController::class, 'showLoginForm'])->name('login');
+// =========================================================================
+// VISTA DE USUARIO / LANDING PAGE PÚBLICA (RF-02, RF-03, RF-04, RF-05)
+// =========================================================================
+Route::get('/', [LandingController::class, 'index'])->name('home');
+Route::get('/landing', [LandingController::class, 'index'])->name('landing');
+Route::post('/citas/agendar', [LandingController::class, 'agendarCita'])->name('citas.agendar');
+Route::get('/api/citas-semana', [LandingController::class, 'citasSemana'])->name('citas.semana');
+
+// =========================================================================
+// AUTENTICACIÓN Y ACCESO (Clientes y Administradores)
+// =========================================================================
+Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])->name('login.post');
 
 // Registro de usuarios

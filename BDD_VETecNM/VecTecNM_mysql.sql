@@ -22,6 +22,7 @@ CREATE TABLE usuarios (
     id_usuario INT AUTO_INCREMENT PRIMARY KEY,
     nombre VARCHAR(100) NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL,
+    telefono VARCHAR(20) NULL,
     password VARCHAR(255) NOT NULL,
     rol VARCHAR(20) CHECK (rol IN ('cliente', 'admin')) DEFAULT 'cliente',
     fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -63,6 +64,7 @@ CREATE TABLE citas (
     id_mascota INT NOT NULL,
     fecha DATE NOT NULL,
     hora TIME NOT NULL,
+    telefono_contacto VARCHAR(20) NULL,
     motivo VARCHAR(255) NOT NULL,
     estado VARCHAR(20) CHECK (estado IN ('Pendiente', 'Confirmada', 'Finalizada', 'Cancelada')) DEFAULT 'Pendiente',
     fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Schema;
 
 class AdminController extends Controller
 {
@@ -238,17 +239,24 @@ class AdminController extends Controller
         $request->validate([
             'nombre' => 'required|string|max:100',
             'email' => 'required|email|max:100|unique:usuarios,email',
+            'telefono' => 'nullable|string|max:20',
             'password' => 'required|string|min:6',
             'rol' => 'required|in:cliente,admin',
         ]);
 
-        DB::table('usuarios')->insert([
+        $userData = [
             'nombre' => trim($request->nombre),
             'email' => strtolower(trim($request->email)),
             'password' => Hash::make($request->password),
             'rol' => $request->rol,
             'fecha_registro' => now(),
-        ]);
+        ];
+
+        if ($request->filled('telefono') && Schema::hasColumn('usuarios', 'telefono')) {
+            $userData['telefono'] = trim($request->telefono);
+        }
+
+        DB::table('usuarios')->insert($userData);
 
         return redirect()->route('admin.usuarios.index')->with('success', 'Usuario creado exitosamente.');
     }
@@ -258,6 +266,7 @@ class AdminController extends Controller
         $request->validate([
             'nombre' => 'required|string|max:100',
             'email' => 'required|email|max:100|unique:usuarios,email,'.$id.',id_usuario',
+            'telefono' => 'nullable|string|max:20',
             'rol' => 'required|in:cliente,admin',
             'password' => 'nullable|string|min:6',
         ]);
@@ -267,6 +276,10 @@ class AdminController extends Controller
             'email' => strtolower(trim($request->email)),
             'rol' => $request->rol,
         ];
+
+        if ($request->has('telefono') && Schema::hasColumn('usuarios', 'telefono')) {
+            $updateData['telefono'] = $request->filled('telefono') ? trim($request->telefono) : null;
+        }
 
         if ($request->filled('password')) {
             $updateData['password'] = Hash::make($request->password);

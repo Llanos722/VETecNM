@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Schema;
 
 class AuthController extends Controller
 {
@@ -85,6 +86,7 @@ class AuthController extends Controller
         $request->validate([
             'nombre' => 'required|string|max:100',
             'email' => 'required|email|max:100|unique:usuarios,email',
+            'telefono' => 'nullable|string|max:20',
             'password' => 'required|string|min:6|confirmed',
             'nombre_mascota' => 'nullable|string|max:100',
             'especie_mascota' => 'nullable|string|max:50',
@@ -101,13 +103,19 @@ class AuthController extends Controller
         ]);
 
         // Insert new user and get ID
-        $userId = DB::table('usuarios')->insertGetId([
+        $userData = [
             'nombre' => trim($request->input('nombre')),
             'email' => strtolower(trim($request->input('email'))),
             'password' => Hash::make($request->input('password')),
             'rol' => 'cliente',
             'fecha_registro' => now(),
-        ]);
+        ];
+
+        if ($request->filled('telefono') && Schema::hasColumn('usuarios', 'telefono')) {
+            $userData['telefono'] = trim($request->input('telefono'));
+        }
+
+        $userId = DB::table('usuarios')->insertGetId($userData);
 
         // Register pet if provided
         if ($request->filled('nombre_mascota')) {

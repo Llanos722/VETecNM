@@ -33,7 +33,12 @@
                     <tr>
                         <td><strong>#{{ $u->id_usuario }}</strong></td>
                         <td><strong style="color: #0f172a;"><i class="fa-regular fa-user"></i> {{ $u->nombre }}</strong></td>
-                        <td>{{ $u->email }}</td>
+                        <td>
+                            {{ $u->email }}
+                            @if(!empty($u->telefono))
+                                <br><span style="font-size: 0.78rem; color: #0284c7;"><i class="fa-solid fa-phone"></i> {{ $u->telefono }}</span>
+                            @endif
+                        </td>
                         <td>
                             @if($u->rol === 'admin')
                                 <span class="admin-badge"><i class="fa-solid fa-shield"></i> {{ ucfirst($u->rol) }}</span>
@@ -84,9 +89,15 @@
                 <label for="nombre">Nombre Completo *</label>
                 <input type="text" name="nombre" id="nombre" placeholder="Ej: Maria López" required>
             </div>
-            <div class="form-group">
-                <label for="email">Correo Electrónico *</label>
-                <input type="email" name="email" id="email" placeholder="correo@ejemplo.com" required>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="email">Correo Electrónico *</label>
+                    <input type="email" name="email" id="email" placeholder="correo@ejemplo.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="telefono">Teléfono (WhatsApp)</label>
+                    <input type="tel" name="telefono" id="telefono" placeholder="Ej: 3411234567">
+                </div>
             </div>
             <div class="form-row">
                 <div class="form-group">
@@ -123,9 +134,15 @@
                 <label for="edit_nombre">Nombre Completo *</label>
                 <input type="text" name="nombre" id="edit_nombre" required>
             </div>
-            <div class="form-group">
-                <label for="edit_email">Correo Electrónico *</label>
-                <input type="email" name="email" id="edit_email" required>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="edit_email">Correo Electrónico *</label>
+                    <input type="email" name="email" id="edit_email" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit_telefono">Teléfono (WhatsApp)</label>
+                    <input type="tel" name="telefono" id="edit_telefono" placeholder="Ej: 3411234567">
+                </div>
             </div>
             <div class="form-row">
                 <div class="form-group">
@@ -163,6 +180,7 @@
         document.getElementById('formEditUsuario').action = "/admin/usuarios/" + usuario.id_usuario;
         document.getElementById('edit_nombre').value = usuario.nombre;
         document.getElementById('edit_email').value = usuario.email;
+        document.getElementById('edit_telefono').value = usuario.telefono || '';
         document.getElementById('edit_rol').value = usuario.rol;
         document.getElementById('edit_password').value = '';
         document.getElementById('modalEdit').classList.add('active');

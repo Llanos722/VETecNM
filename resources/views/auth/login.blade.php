@@ -83,6 +83,11 @@
             <div class="form-links">
                 <a href="{{ route('password.request') }}" style="display: block; margin-bottom: 0.8rem;">¿Olvidaste tu contraseña?</a>
                 <a href="{{ route('register') }}" class="btn-secondary">Crear una cuenta</a>
+                <div style="margin-top: 1rem;">
+                    <a href="{{ route('home') }}" style="color: #64748b; font-size: 0.85rem; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+                        <i class="fa-solid fa-arrow-left"></i> Volver a la página principal
+                    </a>
+                </div>
             </div>
         </form>
     </div>

@@ -17,6 +17,7 @@ class AuthFeaturesTest extends TestCase
                 id_usuario INTEGER PRIMARY KEY AUTOINCREMENT,
                 nombre VARCHAR(100) NOT NULL,
                 email VARCHAR(100) UNIQUE NOT NULL,
+                telefono VARCHAR(20),
                 password VARCHAR(255) NOT NULL,
                 rol VARCHAR(20) DEFAULT "cliente",
                 fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -29,6 +30,7 @@ class AuthFeaturesTest extends TestCase
         $response = $this->get('/register');
         $response->assertStatus(200);
         $response->assertSee('Crea tu cuenta');
+        $response->assertSee('Términos, Condiciones y Protocolos de Acceso');
     }
 
     public function test_forgot_password_page_can_be_rendered(): void
@@ -45,16 +47,18 @@ class AuthFeaturesTest extends TestCase
         $response = $this->post('/register', [
             'nombre' => 'Test User',
             'email' => $email,
+            'telefono' => '3411234567',
             'password' => 'password123',
             'password_confirmation' => 'password123',
         ]);
 
-        $response->assertRedirect('/');
+        $response->assertRedirect(route('login'));
         $response->assertSessionHas('success', 'register_ok');
 
         $this->assertDatabaseHas('usuarios', [
             'email' => $email,
             'nombre' => 'Test User',
+            'telefono' => '3411234567',
         ]);
     }
 
@@ -76,7 +80,7 @@ class AuthFeaturesTest extends TestCase
             'password_confirmation' => 'newpassword123',
         ]);
 
-        $response->assertRedirect('/');
+        $response->assertRedirect(route('login'));
         $response->assertSessionHas('success', 'password_reset_ok');
 
         $user = DB::table('usuarios')->where('email', $email)->first();

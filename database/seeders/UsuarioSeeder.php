@@ -19,6 +19,7 @@ class UsuarioSeeder extends Seeder
             ['email' => 'admin@vetecnm.com'],
             [
                 'nombre' => 'Administrador Vet',
+                'telefono' => '3411234567',
                 'password' => Hash::make('admin123'),
                 'rol' => 'admin',
                 'fecha_registro' => now(),
@@ -29,6 +30,7 @@ class UsuarioSeeder extends Seeder
             ['email' => 'edgm02061@gmail.com'],
             [
                 'nombre' => 'Admin EDGM',
+                'telefono' => '3419876543',
                 'password' => Hash::make('123456789'),
                 'rol' => 'admin',
                 'fecha_registro' => now(),
@@ -39,6 +41,7 @@ class UsuarioSeeder extends Seeder
             ['email' => 'carlos.m@correo.com'],
             [
                 'nombre' => 'Carlos Mendoza',
+                'telefono' => '3415551234',
                 'password' => Hash::make('cliente123'),
                 'rol' => 'cliente',
                 'fecha_registro' => now(),

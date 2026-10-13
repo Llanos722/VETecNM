@@ -11,22 +11,22 @@ if (isset($_GET['success']) || isset($_GET['error'])) {
     $action_button = '<button class="alert-button" onclick="document.getElementById(\'global-alert\').style.display=\'none\'">Cerrar</button>';
 
     if ($is_success) {
-        $message_text = match($_GET['success']) {
+        $message_text = match ($_GET['success']) {
             'logout_ok' => '👋 Sesión cerrada correctamente.',
             'password_reset_ok' => '✅ Contraseña restablecida con éxito.',
             default => '✅ Operación exitosa.',
         };
     } else {
         $error_msg_code = $_GET['error'];
-        $message_text = match($error_msg_code) {
+        $message_text = match ($error_msg_code) {
             'login_fail' => '❌ Error de credenciales. Revisa tu usuario y contraseña.',
             'acceso_denegado' => '❌ Acceso denegado. Debes iniciar sesión.',
             default => '❌ Ha ocurrido un error.',
         };
     }
-    
-    $message = '<div id="global-alert" class="alert ' . $type . '">';
-    $message .= '<span>' . $message_text . '</span>';
+
+    $message = '<div id="global-alert" class="alert '.$type.'">';
+    $message .= '<span>'.$message_text.'</span>';
     $message .= $action_button;
     $message .= '</div>';
 }
