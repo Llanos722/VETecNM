@@ -319,8 +319,9 @@ class AuthController extends Controller
         // Obtener teléfono del usuario para la cita
         $userObj = DB::table('usuarios')->where('id_usuario', $userId)->first();
         $horaFormateada = strlen($request->hora) === 5 ? $request->hora.':00' : $request->hora;
+        $precio = $request->filled('precio') ? (float) $request->precio : CitaService::getPrecioServicio($request->servicio);
 
-        DB::table('citas')->insert([
+        $citaData = [
             'id_mascota' => $request->id_mascota,
             'fecha' => $request->fecha,
             'hora' => $horaFormateada,
@@ -332,7 +333,13 @@ class AuthController extends Controller
             'canal' => 'web',
             'notas' => $request->motivo ? trim($request->motivo) : null,
             'fecha_creacion' => now(),
-        ]);
+        ];
+
+        if (Schema::hasColumn('citas', 'precio')) {
+            $citaData['precio'] = $precio;
+        }
+
+        DB::table('citas')->insert($citaData);
 
         return redirect()->route('dashboard')->with('success', '¡Cita médica agendada exitosamente!');
     }

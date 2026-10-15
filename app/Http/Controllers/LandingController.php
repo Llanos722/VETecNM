@@ -378,6 +378,36 @@ class LandingController extends Controller
 
         $profesionalesList = CitaService::getProfesionales();
 
+        // Días no laborables oficiales para el datepicker y validación del frontend (Punto 8)
+        $diasNoLaborables = [];
+        if (Schema::hasTable('dias_no_laborables')) {
+            $diasNoLaborables = DB::table('dias_no_laborables')
+                ->where('activo', true)
+                ->get(['fecha', 'motivo'])
+                ->toArray();
+        }
+
+        if (empty($diasNoLaborables)) {
+            $festivos = [
+                ['fecha' => '2026-01-01', 'motivo' => 'Año Nuevo'],
+                ['fecha' => '2026-02-05', 'motivo' => 'Día de la Constitución'],
+                ['fecha' => '2026-03-21', 'motivo' => 'Natalicio de Benito Juárez'],
+                ['fecha' => '2026-05-01', 'motivo' => 'Día del Trabajo'],
+                ['fecha' => '2026-09-16', 'motivo' => 'Día de la Independencia'],
+                ['fecha' => '2026-11-20', 'motivo' => 'Revolución Mexicana'],
+                ['fecha' => '2026-12-25', 'motivo' => 'Navidad'],
+            ];
+            $diasNoLaborables = array_map(fn ($f) => (object) $f, $festivos);
+        }
+
+        $diasCerradosSemana = [];
+        if (Schema::hasTable('configuracion_horarios')) {
+            $diasCerradosSemana = DB::table('configuracion_horarios')
+                ->where('activo', false)
+                ->pluck('dia_semana')
+                ->toArray();
+        }
+
         return view('landing', compact(
             'clinicaInfo',
             'categoriasServicios',
@@ -389,7 +419,9 @@ class LandingController extends Controller
             'finSemana',
             'offsetSemana',
             'usuarioLogueado',
-            'mascotasUsuario'
+            'mascotasUsuario',
+            'diasNoLaborables',
+            'diasCerradosSemana'
         ));
     }
 
@@ -418,30 +450,84 @@ class LandingController extends Controller
      */
     public function agendarCita(Request $request)
     {
+        // Puntos de Calidad: 1 (Nombre), 2 (Teléfono), 3 (Email), 4 (Mascota), 5 (Especie), 8 (Fecha), 10 (Motivo), 11 (Términos)
         $request->validate([
-            'nombre' => 'required|string|max:100',
-            'email' => 'required|email|max:100',
-            'telefono' => 'required|string|max:20',
-            'mascota_nombre' => 'required|string|max:100',
-            'especie' => 'required|string|max:50',
-            'servicio' => 'required|string|max:150',
-            'profesional' => 'nullable|string|max:150',
-            'fecha' => 'required|date|after_or_equal:today',
-            'hora' => 'required|string',
-            'terms' => 'accepted',
-            'motivo' => 'nullable|string|max:255',
+            'nombre' => ['required', 'string', 'max:100', 'regex:/^[\pL\s]+$/u'],
+            'email' => ['required', 'string', 'email:rfc,filter', 'max:100'],
+            'telefono' => ['required', 'string', 'regex:/^[0-9]{10}$/'],
+            'mascota_nombre' => ['required', 'string', 'max:100'],
+            'especie' => ['required', 'string', 'in:Perro,Gato,Ave,Conejo,Reptil,Otro'],
+            'servicio' => ['required', 'string', 'max:150'],
+            'profesional' => ['nullable', 'string', 'max:150'],
+            'fecha' => ['required', 'date', 'after_or_equal:today'],
+            'hora' => ['required', 'string'],
+            'terms' => ['accepted'],
+            'motivo' => ['nullable', 'string', 'max:255'],
         ], [
             'nombre.required' => 'Ingresa tu nombre completo.',
+            'nombre.regex' => 'El nombre completo permite únicamente letras y espacios.',
             'email.required' => 'Ingresa tu correo electrónico.',
+            'email.email' => 'El correo electrónico debe tener una estructura válida (usuario@dominio.com).',
             'telefono.required' => 'El teléfono de contacto es obligatorio.',
-            'mascota_nombre.required' => 'Indica el nombre de tu mascota.',
+            'telefono.regex' => 'El teléfono debe contener estrictamente 10 dígitos numéricos.',
+            'mascota_nombre.required' => 'El nombre de la mascota es un campo obligatorio.',
             'especie.required' => 'Selecciona la especie de tu mascota.',
+            'especie.in' => 'Selecciona una especie válida de las opciones predeterminadas (Perro, Gato, Ave, Conejo, Reptil, Otro).',
             'servicio.required' => 'Selecciona el servicio requerido.',
             'fecha.required' => 'Selecciona la fecha de la cita.',
             'fecha.after_or_equal' => 'La fecha no puede ser anterior al día de hoy.',
             'hora.required' => 'Selecciona el horario deseado.',
-            'terms.accepted' => 'Debes aceptar los Términos, Condiciones y Protocolos de Acceso para agendar tu cita.',
+            'terms.accepted' => 'Debes aceptar los Términos, Condiciones y Protocolos de Acceso (RF-02) antes de proceder.',
         ]);
+
+        // Punto 8: Validación de días no laborables y días de descanso de la clínica
+        $festivosPorDefecto = [
+            '2026-01-01' => 'Año Nuevo',
+            '2026-02-05' => 'Día de la Constitución',
+            '2026-03-21' => 'Natalicio de Benito Juárez',
+            '2026-05-01' => 'Día del Trabajo',
+            '2026-09-16' => 'Día de la Independencia',
+            '2026-11-20' => 'Revolución Mexicana',
+            '2026-12-25' => 'Navidad',
+        ];
+
+        if (isset($festivosPorDefecto[$request->fecha])) {
+            return redirect()->back()
+                ->withInput()
+                ->with('horario_no_disponible_alerta', [
+                    'mensaje' => 'Fecha No Laborable.',
+                    'detalle' => "La clínica no labora el {$request->fecha} por motivo de: {$festivosPorDefecto[$request->fecha]}. Por favor selecciona una fecha laborable.",
+                ]);
+        }
+
+        if (Schema::hasTable('dias_no_laborables')) {
+            $diaNoLaborable = DB::table('dias_no_laborables')
+                ->where('fecha', $request->fecha)
+                ->where('activo', true)
+                ->first();
+
+            if ($diaNoLaborable) {
+                return redirect()->back()
+                    ->withInput()
+                    ->with('horario_no_disponible_alerta', [
+                        'mensaje' => 'Fecha No Laborable.',
+                        'detalle' => "La clínica no labora el {$request->fecha} por motivo de: {$diaNoLaborable->motivo}. Por favor selecciona una fecha laborable.",
+                    ]);
+            }
+        }
+
+        if (Schema::hasTable('configuracion_horarios')) {
+            $diaSemana = Carbon::parse($request->fecha)->dayOfWeekIso;
+            $confHorario = DB::table('configuracion_horarios')->where('dia_semana', $diaSemana)->first();
+            if ($confHorario && ! $confHorario->activo) {
+                return redirect()->back()
+                    ->withInput()
+                    ->with('horario_no_disponible_alerta', [
+                        'mensaje' => 'Fecha No Laborable.',
+                        'detalle' => 'La clínica permanece cerrada en este día de la semana. Por favor selecciona otra fecha.',
+                    ]);
+            }
+        }
 
         // 1. RESTRICCIÓN DE TIEMPO: La hora no debe haber pasado ni ser con menos de 30 minutos de anticipación
         try {
@@ -538,6 +624,7 @@ class LandingController extends Controller
 
         // 6. Crear la Cita Médica
         $horaFormateada = strlen($request->hora) === 5 ? $request->hora.':00' : $request->hora;
+        $precio = CitaService::getPrecioServicio($request->servicio);
 
         $citaData = [
             'id_mascota' => $mascotaId,
@@ -552,6 +639,10 @@ class LandingController extends Controller
             'fecha_creacion' => now(),
         ];
 
+        if (Schema::hasColumn('citas', 'precio')) {
+            $citaData['precio'] = $precio;
+        }
+
         if (Schema::hasColumn('citas', 'telefono_contacto')) {
             $citaData['telefono_contacto'] = $inputTelefono;
         }
@@ -563,10 +654,19 @@ class LandingController extends Controller
             'dueno' => $inputNombre,
             'telefono' => $inputTelefono,
             'servicio' => $request->servicio,
+            'precio' => $precio,
             'profesional' => $profesional ?? 'Profesional asignado por clínica',
             'fecha' => Carbon::parse($request->fecha)->format('d/m/Y'),
             'hora' => substr($request->hora, 0, 5),
         ]);
+    }
+
+    /**
+     * API to fetch all active services with their pricing and descriptions.
+     */
+    public function serviciosApi()
+    {
+        return response()->json(CitaService::getServicios());
     }
 
     /**
@@ -588,6 +688,7 @@ class LandingController extends Controller
                 'citas.hora',
                 'citas.motivo',
                 'citas.servicio',
+                'citas.precio',
                 'citas.profesional',
                 'citas.estado',
                 'mascotas.nombre as mascota_nombre',

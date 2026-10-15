@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -15,6 +16,7 @@
             font-family: 'Poppins', sans-serif;
             margin: 0;
         }
+
         .navbar {
             background-color: var(--primary-color, #1e3a8a);
             color: white;
@@ -22,8 +24,9 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
+
         .navbar-brand {
             display: flex;
             align-items: center;
@@ -31,11 +34,13 @@
             font-size: 1.5rem;
             font-weight: 700;
         }
+
         .user-menu {
             display: flex;
             align-items: center;
             gap: 15px;
         }
+
         .btn-admin-link {
             background: #2563eb;
             color: white;
@@ -48,9 +53,11 @@
             gap: 6px;
             font-size: 0.9rem;
         }
+
         .btn-admin-link:hover {
             background: #1d4ed8;
         }
+
         .btn-logout {
             background: #ef4444;
             color: white;
@@ -61,18 +68,21 @@
             font-weight: 600;
             text-decoration: none;
         }
+
         .container {
             max-width: 1100px;
             margin: 2rem auto;
             padding: 0 1rem;
         }
+
         .welcome-card {
             background: white;
             padding: 1.5rem 2rem;
             border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
             margin-bottom: 2rem;
         }
+
         .data-table {
             width: 100%;
             border-collapse: collapse;
@@ -80,30 +90,58 @@
             background: white;
             border-radius: 8px;
             overflow: hidden;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
         }
-        .data-table th, .data-table td {
+
+        .data-table th,
+        .data-table td {
             padding: 12px 16px;
             text-align: left;
             border-bottom: 1px solid #e2e8f0;
         }
+
         .data-table th {
             background: #f8fafc;
             color: var(--primary-color, #1e3a8a);
             font-weight: 600;
         }
+
         .badge {
             padding: 4px 10px;
             border-radius: 12px;
             font-size: 0.8rem;
             font-weight: 600;
         }
-        .badge-admin { background: #dbeafe; color: #1e40af; }
-        .badge-cliente { background: #fef3c7; color: #92400e; }
-        .badge-confirmada { background: #dcfce7; color: #166534; }
-        .badge-pendiente { background: #fef9c3; color: #854d0e; }
-        .badge-finalizada { background: #e0f2fe; color: #075985; }
-        .badge-cancelada { background: #fee2e2; color: #991b1b; }
+
+        .badge-admin {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .badge-cliente {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .badge-confirmada {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .badge-pendiente {
+            background: #fef9c3;
+            color: #854d0e;
+        }
+
+        .badge-finalizada {
+            background: #e0f2fe;
+            color: #075985;
+        }
+
+        .badge-cancelada {
+            background: #fee2e2;
+            color: #991b1b;
+        }
 
         /* Action Buttons */
         .btn-schedule-main {
@@ -120,6 +158,7 @@
             gap: 8px;
             transition: background 0.2s;
         }
+
         .btn-schedule-main:hover {
             background: #0369a1;
         }
@@ -137,6 +176,7 @@
             align-items: center;
             gap: 8px;
         }
+
         .btn-secondary-custom:hover {
             background: #e2e8f0;
         }
@@ -144,7 +184,10 @@
         /* Modal Styles */
         .modal-overlay {
             position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
             background: rgba(15, 23, 42, 0.6);
             backdrop-filter: blur(4px);
             z-index: 1000;
@@ -153,19 +196,22 @@
             justify-content: center;
             padding: 1rem;
         }
+
         .modal-overlay.active {
             display: flex;
         }
+
         .modal-card {
             background: white;
             border-radius: 14px;
             max-width: 620px;
             width: 100%;
             padding: 2rem;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
             max-height: 90vh;
             overflow-y: auto;
         }
+
         .modal-header {
             display: flex;
             justify-content: space-between;
@@ -174,11 +220,13 @@
             border-bottom: 1px solid #e2e8f0;
             padding-bottom: 0.8rem;
         }
+
         .modal-header h3 {
             margin: 0;
             color: #0f172a;
             font-size: 1.2rem;
         }
+
         .modal-close-btn {
             background: none;
             border: none;
@@ -186,15 +234,18 @@
             cursor: pointer;
             color: #94a3b8;
         }
+
         .form-grid-2 {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 1rem;
             margin-bottom: 1rem;
         }
+
         .input-group-modern {
             margin-bottom: 1rem;
         }
+
         .input-group-modern label {
             display: block;
             font-size: 0.88rem;
@@ -202,7 +253,10 @@
             color: #334155;
             margin-bottom: 6px;
         }
-        .input-group-modern input, .input-group-modern select, .input-group-modern textarea {
+
+        .input-group-modern input,
+        .input-group-modern select,
+        .input-group-modern textarea {
             width: 100%;
             padding: 0.7rem 0.9rem;
             border: 1.5px solid #cbd5e1;
@@ -211,7 +265,10 @@
             font-size: 0.92rem;
             box-sizing: border-box;
         }
-        .input-group-modern input:focus, .input-group-modern select:focus, .input-group-modern textarea:focus {
+
+        .input-group-modern input:focus,
+        .input-group-modern select:focus,
+        .input-group-modern textarea:focus {
             outline: none;
             border-color: #0284c7;
             box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
@@ -220,7 +277,10 @@
         /* Estilos de la ventana azul de alerta (R-32) */
         .modal-backdrop-blue {
             position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
             background: rgba(15, 23, 42, 0.7);
             backdrop-filter: blur(4px);
             z-index: 99999;
@@ -229,6 +289,7 @@
             justify-content: center;
             padding: 1.5rem;
         }
+
         .modal-card-blue {
             background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%);
             color: white;
@@ -240,6 +301,7 @@
             border: 2px solid rgba(255, 255, 255, 0.2);
             animation: popIn 0.25s ease-out;
         }
+
         .btn-blue-modal {
             background: #ffffff;
             color: #1d4ed8;
@@ -254,15 +316,25 @@
             gap: 8px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         }
+
         .btn-blue-modal:hover {
             background: #f8fafc;
         }
+
         @keyframes popIn {
-            from { transform: scale(0.9); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
+            from {
+                transform: scale(0.9);
+                opacity: 0;
+            }
+
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
         }
     </style>
 </head>
+
 <body>
     <nav class="navbar">
         <div class="navbar-brand">
@@ -270,10 +342,11 @@
             <span>VETecNM</span>
         </div>
         <div class="user-menu">
-            <a href="{{ route('home') }}" style="color: white; text-decoration: none; font-size: 0.9rem; margin-right: 10px;">
+            <a href="{{ route('home') }}"
+                style="color: white; text-decoration: none; font-size: 0.9rem; margin-right: 10px;">
                 <i class="fa-solid fa-globe"></i> Ver Portal
             </a>
-            @if(session('user_rol') === 'admin' || session('user_rol') === 'recepcionista')
+            @if (session('user_rol') === 'admin' || session('user_rol') === 'recepcionista')
                 <a href="{{ route('admin.dashboard') }}" class="btn-admin-link">
                     <i class="fa-solid fa-user-shield"></i> Panel Staff / Admin
                 </a>
@@ -287,45 +360,53 @@
     </nav>
 
     <div class="container">
-        @if(session('success'))
-            <div style="background: #ecfdf5; border: 1px solid #a7f3d0; color: #065f46; padding: 12px 16px; border-radius: 8px; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 10px;">
+        @if (session('success'))
+            <div
+                style="background: #ecfdf5; border: 1px solid #a7f3d0; color: #065f46; padding: 12px 16px; border-radius: 8px; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 10px;">
                 <i class="fa-solid fa-circle-check" style="font-size: 1.2rem; color: #10b981;"></i>
                 <span>{{ session('success') }}</span>
             </div>
         @endif
 
-        @if(session('alerta_error_general'))
-            <div style="background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; padding: 12px 16px; border-radius: 8px; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 10px;">
+        @if (session('alerta_error_general'))
+            <div
+                style="background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; padding: 12px 16px; border-radius: 8px; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 10px;">
                 <i class="fa-solid fa-circle-exclamation" style="font-size: 1.2rem; color: #ef4444;"></i>
                 <span>{{ session('alerta_error_general') }}</span>
             </div>
         @endif
 
-        @if(session('error'))
-            <div style="background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; padding: 12px 16px; border-radius: 8px; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 10px;">
+        @if (session('error'))
+            <div
+                style="background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; padding: 12px 16px; border-radius: 8px; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 10px;">
                 <i class="fa-solid fa-circle-exclamation" style="font-size: 1.2rem; color: #ef4444;"></i>
                 <span>{{ session('error') }}</span>
             </div>
         @endif
 
-        @if(session('user_rol') === 'admin' || session('user_rol') === 'recepcionista')
-            <div style="background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; padding: 1rem 1.5rem; border-radius: 10px; margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-                <span><i class="fa-solid fa-shield-halved"></i> <strong>Modo {{ ucfirst(session('user_rol')) }} Activo:</strong> Tienes acceso para gestionar citas y atención médica.</span>
-                <a href="{{ route('admin.citas.index') }}" class="btn-admin-link">Ir a Gestión de Citas <i class="fa-solid fa-arrow-right"></i></a>
+        @if (session('user_rol') === 'admin' || session('user_rol') === 'recepcionista')
+            <div
+                style="background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; padding: 1rem 1.5rem; border-radius: 10px; margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                <span><i class="fa-solid fa-shield-halved"></i> <strong>Modo {{ ucfirst(session('user_rol')) }}
+                        Activo:</strong> Tienes acceso para gestionar citas y atención médica.</span>
+                <a href="{{ route('admin.citas.index') }}" class="btn-admin-link">Ir a Gestión de Citas <i
+                        class="fa-solid fa-arrow-right"></i></a>
             </div>
         @endif
 
         <!-- Card de Bienvenida & Acciones Principales -->
         <div class="welcome-card">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
+            <div
+                style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
                 <div>
                     <h2 style="margin: 0 0 6px 0; color: #0f172a;">Hola, {{ session('user_nombre') }} 👋</h2>
-                    <p style="color: #64748b; margin: 0;">Gestiona tus mascotas y agenda citas médicas veterinarias con nuestros profesionales.</p>
+                    <p style="color: #64748b; margin: 0;">Gestiona tus mascotas y agenda citas médicas veterinarias con
+                        nuestros profesionales.</p>
                 </div>
                 <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                    <!-- R-30: BOTÓN AGENDAR CITA PARA CLIENTES REGISTRADOS -->
+                    <!-- BOTÓN AGENDAR CITA PARA CLIENTES REGISTRADOS -->
                     <button type="button" class="btn-schedule-main" onclick="openAgendarModal()">
-                        <i class="fa-solid fa-calendar-plus"></i> Agendar Cita (R-30)
+                        <i class="fa-solid fa-calendar-plus"></i> Agendar Cita
                     </button>
                     <button type="button" class="btn-secondary-custom" onclick="openPetModal()">
                         <i class="fa-solid fa-paw"></i> Registrar Mascota
@@ -362,8 +443,10 @@
         <!-- Tabla de Citas del Cliente (R-30) -->
         <div class="welcome-card">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                <h3 style="margin: 0; color: #0f172a;"><i class="fa-solid fa-calendar-days" style="color: #0284c7;"></i> Mis Citas Veterinarias</h3>
-                <button type="button" class="btn-schedule-main" style="padding: 0.4rem 0.9rem; font-size: 0.85rem;" onclick="openAgendarModal()">
+                <h3 style="margin: 0; color: #0f172a;"><i class="fa-solid fa-calendar-days" style="color: #0284c7;"></i>
+                    Mis Citas Veterinarias</h3>
+                <button type="button" class="btn-schedule-main" style="padding: 0.4rem 0.9rem; font-size: 0.85rem;"
+                    onclick="openAgendarModal()">
                     <i class="fa-solid fa-plus"></i> Nueva Cita
                 </button>
             </div>
@@ -375,6 +458,7 @@
                             <th>Folio</th>
                             <th>Mascota</th>
                             <th>Servicio Solicitado</th>
+                            <th>Costo / Tarifa</th>
                             <th>Especialista Asignado</th>
                             <th>Fecha</th>
                             <th>Hora</th>
@@ -386,13 +470,23 @@
                             <tr>
                                 <td><strong>#{{ $c->id_cita }}</strong></td>
                                 <td>
-                                    <strong><i class="fa-solid fa-paw" style="color: #64748b;"></i> {{ $c->mascota_nombre }}</strong>
+                                    <strong><i class="fa-solid fa-paw" style="color: #64748b;"></i>
+                                        {{ $c->mascota_nombre }}</strong>
                                     <span style="font-size: 0.78rem; color: #64748b;">({{ $c->especie }})</span>
                                 </td>
                                 <td>{{ $c->servicio ?? $c->motivo }}</td>
                                 <td>
+                                    <span
+                                        style="display: inline-flex; align-items: center; gap: 5px; font-weight: 700; color: #059669; background: #ecfdf5; padding: 3px 9px; border-radius: 6px; font-size: 0.84rem; border: 1px solid #a7f3d0; white-space: nowrap;">
+                                        <i class="fa-solid fa-tag" style="font-size: 0.75rem;"></i>
+                                        ${{ number_format($c->precio ?? \App\Services\CitaService::getPrecioServicio($c->servicio), 2) }}
+                                        MXN
+                                    </span>
+                                </td>
+                                <td>
                                     <span style="color: #0369a1; font-weight: 500;">
-                                        <i class="fa-solid fa-user-doctor"></i> {{ $c->profesional ?? 'Equipo Médico General' }}
+                                        <i class="fa-solid fa-user-doctor"></i>
+                                        {{ $c->profesional ?? 'Equipo Médico General' }}
                                     </span>
                                 </td>
                                 <td>{{ \Carbon\Carbon::parse($c->fecha)->format('d/m/Y') }}</td>
@@ -403,8 +497,9 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="7" style="text-align: center; color: #94a3b8; padding: 2rem;">
-                                    Aún no tienes citas agendadas. Haz clic en <strong>Agendar Cita</strong> para programar una consulta.
+                                <td colspan="8" style="text-align: center; color: #94a3b8; padding: 2rem;">
+                                    Aún no tienes citas agendadas. Haz clic en <strong>Agendar Cita</strong> para
+                                    programar una consulta.
                                 </td>
                             </tr>
                         @endforelse
@@ -422,17 +517,22 @@
         <div class="modal-card">
             <div class="modal-header">
                 <div>
-                    <h3><i class="fa-solid fa-calendar-plus" style="color: #0284c7;"></i> Agendar Cita Médica (R-30)</h3>
-                    <span style="font-size: 0.82rem; color: #64748b;">Selecciona servicio, especialista, tu mascota, fecha y horario disponible.</span>
+                    <h3><i class="fa-solid fa-calendar-plus" style="color: #0284c7;"></i> Agendar Cita Médica
+                    </h3>
+                    <span style="font-size: 0.82rem; color: #64748b;">Selecciona servicio, especialista, tu mascota,
+                        fecha y horario disponible.</span>
                 </div>
                 <button type="button" class="modal-close-btn" onclick="closeAgendarModal()">&times;</button>
             </div>
 
-            @if($misMascotas->isEmpty())
-                <div style="background: #fffbeb; border: 1px solid #fde68a; color: #92400e; padding: 1rem; border-radius: 8px; margin-bottom: 1.2rem;">
+            @if ($misMascotas->isEmpty())
+                <div
+                    style="background: #fffbeb; border: 1px solid #fde68a; color: #92400e; padding: 1rem; border-radius: 8px; margin-bottom: 1.2rem;">
                     <strong><i class="fa-solid fa-circle-info"></i> Registra primero una mascota</strong>
-                    <p style="margin: 4px 0 10px 0; font-size: 0.88rem;">Para agendar una cita necesitas tener al menos una mascota registrada en tu perfil.</p>
-                    <button type="button" class="btn-schedule-main" onclick="closeAgendarModal(); openPetModal();">Registrar mi mascota ahora</button>
+                    <p style="margin: 4px 0 10px 0; font-size: 0.88rem;">Para agendar una cita necesitas tener al menos
+                        una mascota registrada en tu perfil.</p>
+                    <button type="button" class="btn-schedule-main"
+                        onclick="closeAgendarModal(); openPetModal();">Registrar mi mascota ahora</button>
                 </div>
             @endif
 
@@ -441,11 +541,13 @@
 
                 <!-- Mascota que asistirá (R-30) -->
                 <div class="input-group-modern">
-                    <label for="cli_id_mascota"><i class="fa-solid fa-paw"></i> Mascota que asistirá a la cita *</label>
+                    <label for="cli_id_mascota"><i class="fa-solid fa-paw"></i> Mascota que asistirá a la cita
+                        *</label>
                     <select name="id_mascota" id="cli_id_mascota" required>
                         <option value="">-- Selecciona tu mascota --</option>
-                        @foreach($misMascotas as $m)
-                            <option value="{{ $m->id_mascota }}">{{ $m->nombre }} ({{ $m->especie }} - {{ $m->raza ?? 'Mestizo' }})</option>
+                        @foreach ($misMascotas as $m)
+                            <option value="{{ $m->id_mascota }}">{{ $m->nombre }} ({{ $m->especie }} -
+                                {{ $m->raza ?? 'Mestizo' }})</option>
                         @endforeach
                     </select>
                 </div>
@@ -454,12 +556,21 @@
                     <!-- Servicio (R-30) -->
                     <div class="input-group-modern">
                         <label for="cli_servicio"><i class="fa-solid fa-stethoscope"></i> Servicio Requerido *</label>
-                        <select name="servicio" id="cli_servicio" required onchange="cargarHorariosCliente()">
-                            <option value="">-- Seleccionar Servicio --</option>
-                            @foreach($serviciosDisponibles as $catNombre => $srvList)
+                        <select name="servicio" id="cli_servicio" required
+                            onchange="actualizarPrecioServicioCliente(); cargarHorariosCliente();">
+                            <option value="" data-precio="" data-precio-texto="" data-duracion=""
+                                data-descripcion="" data-incluye="">-- Seleccionar Servicio --</option>
+                            @foreach ($serviciosPorCategoria as $catNombre => $srvList)
                                 <optgroup label="{{ $catNombre }}">
-                                    @foreach($srvList as $srv)
-                                        <option value="{{ $srv }}">{{ $srv }}</option>
+                                    @foreach ($srvList as $srv)
+                                        <option value="{{ $srv['nombre'] }}" data-precio="{{ $srv['precio'] }}"
+                                            data-precio-texto="{{ $srv['precio_texto'] }}"
+                                            data-duracion="{{ $srv['duracion'] ?? '' }}"
+                                            data-descripcion="{{ $srv['descripcion'] ?? '' }}"
+                                            data-incluye="{{ $srv['incluye'] ?? '' }}"
+                                            {{ old('servicio') === $srv['nombre'] ? 'selected' : '' }}>
+                                            {{ $srv['nombre'] }} — {{ $srv['precio_texto'] }}
+                                        </option>
                                     @endforeach
                                 </optgroup>
                             @endforeach
@@ -468,13 +579,46 @@
 
                     <!-- Profesional de Salud / Estética (R-30) -->
                     <div class="input-group-modern">
-                        <label for="cli_profesional"><i class="fa-solid fa-user-doctor"></i> Profesional de Salud/Estética *</label>
+                        <label for="cli_profesional"><i class="fa-solid fa-user-doctor"></i> Profesional de
+                            Salud/Estética *</label>
                         <select name="profesional" id="cli_profesional" required onchange="cargarHorariosCliente()">
                             <option value="">-- Seleccionar Especialista --</option>
-                            @foreach($profesionales as $p)
-                                <option value="{{ $p['nombre'] }}">{{ $p['nombre'] }} ({{ $p['especialidad'] }})</option>
+                            @foreach ($profesionales as $p)
+                                <option value="{{ $p['nombre'] }}">{{ $p['nombre'] }} ({{ $p['especialidad'] }})
+                                </option>
                             @endforeach
                         </select>
+                    </div>
+                </div>
+
+                <!-- Tarjeta dinámica de precio y detalles del servicio -->
+                <div id="cli_servicio_info_box"
+                    style="display: none; background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%); border: 1px solid #a7f3d0; border-radius: 10px; padding: 0.85rem 1rem; margin-top: -4px; margin-bottom: 1.1rem; box-shadow: 0 2px 5px rgba(5, 150, 105, 0.06);">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <div
+                                style="width: 38px; height: 38px; border-radius: 8px; background: #059669; color: white; display: flex; align-items: center; justify-content: center; font-size: 1.15rem; box-shadow: 0 2px 6px rgba(5, 150, 105, 0.25);">
+                                <i class="fa-solid fa-tag"></i>
+                            </div>
+                            <div>
+                                <span
+                                    style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.5px; color: #047857; font-weight: 700; display: block;">Tarifa
+                                    Oficial por Servicio</span>
+                                <span id="cli_servicio_precio"
+                                    style="font-size: 1.25rem; font-weight: 800; color: #065f46;">$0.00 MXN</span>
+                            </div>
+                        </div>
+                        <div
+                            style="display: flex; align-items: center; gap: 6px; background: rgba(5, 150, 105, 0.12); padding: 4px 10px; border-radius: 20px;">
+                            <i class="fa-regular fa-clock" style="color: #059669; font-size: 0.82rem;"></i>
+                            <span id="cli_servicio_duracion"
+                                style="font-size: 0.78rem; font-weight: 600; color: #047857;">Duración: --</span>
+                        </div>
+                    </div>
+                    <div id="cli_servicio_descripcion_box"
+                        style="margin-top: 8px; padding-top: 8px; border-top: 1px dashed #a7f3d0; font-size: 0.82rem; color: #065f46; line-height: 1.45;">
+                        <span id="cli_servicio_descripcion"></span>
                     </div>
                 </div>
 
@@ -482,30 +626,36 @@
                     <!-- Fecha deseada (R-30) -->
                     <div class="input-group-modern">
                         <label for="cli_fecha"><i class="fa-regular fa-calendar"></i> Fecha de la Cita *</label>
-                        <input type="date" name="fecha" id="cli_fecha" min="{{ date('Y-m-d') }}" value="{{ date('Y-m-d') }}" required onchange="cargarHorariosCliente()">
+                        <input type="date" name="fecha" id="cli_fecha" min="{{ date('Y-m-d') }}"
+                            value="{{ date('Y-m-d') }}" required onchange="cargarHorariosCliente()">
                     </div>
 
-                    <!-- Horario disponible dinámico (R-31, Regla de 30 minutos) -->
+                    <!-- Horario disponible dinámico (Regla de 30 minutos) -->
                     <div class="input-group-modern">
-                        <label for="cli_hora"><i class="fa-regular fa-clock"></i> Horario Disponible (R-31) *</label>
+                        <label for="cli_hora"><i class="fa-regular fa-clock"></i> Horario Disponible *</label>
                         <select name="hora" id="cli_hora" required>
                             <option value="">-- Selecciona fecha y profesional --</option>
                         </select>
                     </div>
                 </div>
 
-                <small id="cli_hora_info" style="color: #64748b; font-size: 0.78rem; display: block; margin-top: -6px; margin-bottom: 12px;">
+                <small id="cli_hora_info"
+                    style="color: #64748b; font-size: 0.78rem; display: block; margin-top: -6px; margin-bottom: 12px;">
                     Horarios calculados según disponibilidad laboral, recesos y anticipación mínima de 30 minutos.
                 </small>
 
                 <!-- Motivo / Síntomas -->
                 <div class="input-group-modern">
-                    <label for="cli_motivo"><i class="fa-solid fa-notes-medical"></i> Motivo de la Consulta / Observaciones</label>
-                    <textarea name="motivo" id="cli_motivo" rows="2" placeholder="Describe brevemente síntomas o cualquier solicitud especial para el especialista..."></textarea>
+                    <label for="cli_motivo"><i class="fa-solid fa-notes-medical"></i> Motivo de la Consulta /
+                        Observaciones</label>
+                    <textarea name="motivo" id="cli_motivo" rows="2"
+                        placeholder="Describe brevemente síntomas o cualquier solicitud especial para el especialista..."></textarea>
                 </div>
 
-                <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 1.5rem; border-top: 1px solid #e2e8f0; padding-top: 1rem;">
-                    <button type="button" class="btn-secondary-custom" onclick="closeAgendarModal()">Cancelar</button>
+                <div
+                    style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 1.5rem; border-top: 1px solid #e2e8f0; padding-top: 1rem;">
+                    <button type="button" class="btn-secondary-custom"
+                        onclick="closeAgendarModal()">Cancelar</button>
                     <button type="submit" class="btn-schedule-main">
                         <i class="fa-solid fa-calendar-check"></i> Confirmar Cita
                     </button>
@@ -549,9 +699,11 @@
                     <label>Peso en Kg (Opcional)</label>
                     <input type="number" step="0.01" name="peso" placeholder="Ej: 12.5">
                 </div>
-                <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 1.5rem; border-top: 1px solid #e2e8f0; padding-top: 1rem;">
+                <div
+                    style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 1.5rem; border-top: 1px solid #e2e8f0; padding-top: 1rem;">
                     <button type="button" class="btn-secondary-custom" onclick="closePetModal()">Cancelar</button>
-                    <button type="submit" class="btn-schedule-main" style="background: #059669;">Guardar Mascota</button>
+                    <button type="submit" class="btn-schedule-main" style="background: #059669;">Guardar
+                        Mascota</button>
                 </div>
             </form>
         </div>
@@ -565,7 +717,8 @@
     <div id="modalAlertaAzulCliente" class="modal-backdrop-blue" style="display: none;">
         <div class="modal-card-blue">
             <div style="text-align: center; margin-bottom: 1.5rem;">
-                <div style="width: 80px; height: 80px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.2rem auto; border: 2px solid rgba(255,255,255,0.5);">
+                <div
+                    style="width: 80px; height: 80px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.2rem auto; border: 2px solid rgba(255,255,255,0.5);">
                     <i class="fa-solid fa-triangle-exclamation" style="font-size: 3rem; color: #ffffff;"></i>
                 </div>
                 <h3 style="color: #ffffff; font-size: 1.5rem; margin: 0 0 8px 0; font-weight: 700;">
@@ -574,7 +727,8 @@
                 <p id="alertaAzulTextoCli" style="color: #e0f2fe; font-size: 1.05rem; line-height: 1.5; margin: 0;">
                     El horario ya no se encuentra disponible.
                 </p>
-                <p id="alertaAzulDetalleCli" style="color: #bae6fd; font-size: 0.88rem; margin-top: 10px; font-style: italic;">
+                <p id="alertaAzulDetalleCli"
+                    style="color: #bae6fd; font-size: 0.88rem; margin-top: 10px; font-style: italic;">
                 </p>
             </div>
             <div style="text-align: center;">
@@ -586,8 +740,38 @@
     </div>
 
     <script>
+        function actualizarPrecioServicioCliente() {
+            const select = document.getElementById('cli_servicio');
+            const box = document.getElementById('cli_servicio_info_box');
+            const precioEl = document.getElementById('cli_servicio_precio');
+            const duracionEl = document.getElementById('cli_servicio_duracion');
+            const descEl = document.getElementById('cli_servicio_descripcion');
+
+            if (!select || !box) return;
+
+            const selectedOpt = select.options[select.selectedIndex];
+            if (selectedOpt && selectedOpt.value && selectedOpt.getAttribute('data-precio-texto')) {
+                const precioTexto = selectedOpt.getAttribute('data-precio-texto');
+                const duracion = selectedOpt.getAttribute('data-duracion') || 'Consulta médica estándar';
+                const desc = selectedOpt.getAttribute('data-descripcion') || '';
+                const incluye = selectedOpt.getAttribute('data-incluye') || '';
+
+                precioEl.textContent = precioTexto;
+                duracionEl.textContent = 'Duración: ' + duracion;
+                let descContent = desc;
+                if (incluye) {
+                    descContent += (descContent ? ' • ' : '') + 'Incluye: ' + incluye;
+                }
+                descEl.textContent = descContent;
+                box.style.display = 'block';
+            } else {
+                box.style.display = 'none';
+            }
+        }
+
         function openAgendarModal() {
             document.getElementById('modalAgendarCliente').classList.add('active');
+            actualizarPrecioServicioCliente();
             cargarHorariosCliente();
         }
 
@@ -604,7 +788,8 @@
         }
 
         function mostrarAlertaAzulCli(mensaje, detalle = '') {
-            document.getElementById('alertaAzulTextoCli').innerText = mensaje || 'El horario ya no se encuentra disponible.';
+            document.getElementById('alertaAzulTextoCli').innerText = mensaje ||
+            'El horario ya no se encuentra disponible.';
             document.getElementById('alertaAzulDetalleCli').innerText = detalle || '';
             document.getElementById('modalAlertaAzulCliente').style.display = 'flex';
         }
@@ -625,14 +810,16 @@
 
             selectHora.innerHTML = '<option value="">Consultando disponibilidad...</option>';
 
-            fetch(`/api/citas/disponibilidad?fecha=${fecha}&profesional=${encodeURIComponent(profesional)}&servicio=${encodeURIComponent(servicio)}`)
+            fetch(
+                    `/api/citas/disponibilidad?fecha=${fecha}&profesional=${encodeURIComponent(profesional)}&servicio=${encodeURIComponent(servicio)}`)
                 .then(res => res.json())
                 .then(data => {
                     selectHora.innerHTML = '';
                     if (!data.disponible || !data.slots || data.slots.length === 0) {
                         selectHora.innerHTML = '<option value="">No hay horarios disponibles</option>';
                         info.textContent = data.motivo_cierre || 'No hay horarios disponibles en esta fecha.';
-                        mostrarAlertaAzulCli('El horario ya no se encuentra disponible.', data.motivo_cierre || 'Por favor selecciona otra fecha o profesional.');
+                        mostrarAlertaAzulCli('El horario ya no se encuentra disponible.', data.motivo_cierre ||
+                            'Por favor selecciona otra fecha o profesional.');
                     } else {
                         info.textContent = `${data.slots.length} turnos disponibles para este profesional y fecha.`;
                         data.slots.forEach(slot => {
@@ -649,7 +836,7 @@
         }
 
         // Alerta azul si el backend la envía en sesión (R-32)
-        @if(session('horario_no_disponible_alerta'))
+        @if (session('horario_no_disponible_alerta'))
             window.addEventListener('DOMContentLoaded', function() {
                 mostrarAlertaAzulCli(
                     @json(session('horario_no_disponible_alerta')['mensaje']),
@@ -659,4 +846,5 @@
         @endif
     </script>
 </body>
+
 </html>

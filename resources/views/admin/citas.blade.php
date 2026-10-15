@@ -92,6 +92,7 @@
                         <td>
                             <strong style="font-size: 0.85rem; color: #0f172a;">{{ $c->servicio ?? 'Consulta Médica General' }}</strong>
                             <br><span style="font-size: 0.78rem; color: #475569;"><i class="fa-solid fa-user-doctor"></i> {{ $c->profesional ?? 'Sin asignar' }}</span>
+                            <br><span style="display: inline-flex; align-items: center; gap: 4px; font-size: 0.76rem; font-weight: 700; color: #059669; margin-top: 3px;"><i class="fa-solid fa-tag"></i> ${{ number_format($c->precio ?? \App\Services\CitaService::getPrecioServicio($c->servicio), 2) }} MXN</span>
                         </td>
                         <td>
                             @if(($c->canal ?? 'web') === 'presencial')
@@ -179,7 +180,7 @@
 <div id="modalPresencial" class="modal-backdrop">
     <div class="modal-container" style="max-width: 650px;">
         <div class="modal-header">
-            <h4><i class="fa-solid fa-headset" style="color: #0d9488;"></i> Agendamiento Presencial o Telefónico (R-33)</h4>
+            <h4><i class="fa-solid fa-headset" style="color: #0d9488;"></i> Agendamiento Presencial o Telefónico</h4>
             <button class="modal-close" onclick="closeModal('modalPresencial')">&times;</button>
         </div>
         <form action="{{ route('admin.citas.presencial.store') }}" method="POST">
@@ -282,12 +283,16 @@
             <div class="form-row">
                 <div class="form-group">
                     <label for="pres_servicio">Servicio Requerido *</label>
-                    <select name="servicio" id="pres_servicio" required onchange="cargarDisponibilidadPresencial()">
-                        <option value="">-- Seleccionar Servicio --</option>
-                        @foreach($serviciosDisponibles as $catNombre => $srvList)
+                    <select name="servicio" id="pres_servicio" required onchange="actualizarPrecioPresencial(); cargarDisponibilidadPresencial();">
+                        <option value="" data-precio="" data-precio-texto="">-- Seleccionar Servicio --</option>
+                        @foreach($serviciosPorCategoria as $catNombre => $srvList)
                             <optgroup label="{{ $catNombre }}">
                                 @foreach($srvList as $s)
-                                    <option value="{{ $s }}">{{ $s }}</option>
+                                    <option value="{{ $s['nombre'] }}"
+                                            data-precio="{{ $s['precio'] }}"
+                                            data-precio-texto="{{ $s['precio_texto'] }}">
+                                        {{ $s['nombre'] }} — {{ $s['precio_texto'] }}
+                                    </option>
                                 @endforeach
                             </optgroup>
                         @endforeach
@@ -304,6 +309,18 @@
                 </div>
             </div>
 
+            <!-- Precio del Servicio en Recepción -->
+            <div class="form-group">
+                <label for="pres_precio"><i class="fa-solid fa-tag" style="color: #0d9488;"></i> Precio / Tarifa del Servicio ($ MXN)</label>
+                <div style="position: relative;">
+                    <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-weight: 600; color: #64748b;">$</span>
+                    <input type="number" step="0.01" min="0" name="precio" id="pres_precio" placeholder="0.00" style="padding-left: 28px;">
+                </div>
+                <small id="pres_precio_info" style="color: #64748b; font-size: 0.76rem; display: block; margin-top: 3px;">
+                    Tarifa sugerida según catálogo oficial de servicios (puede ser ajustada por el personal).
+                </small>
+            </div>
+
             <!-- Fecha & Horario Disponible (R-31, Regla de 30 minutos) -->
             <div class="form-row">
                 <div class="form-group">
@@ -311,7 +328,7 @@
                     <input type="date" name="fecha" id="pres_fecha" min="{{ date('Y-m-d') }}" value="{{ date('Y-m-d') }}" required onchange="cargarDisponibilidadPresencial()">
                 </div>
                 <div class="form-group">
-                    <label for="pres_hora">Horario Disponible (R-31) *</label>
+                    <label for="pres_hora">Horario Disponible *</label>
                     <select name="hora" id="pres_hora" required>
                         <option value="">-- Selecciona fecha y profesional --</option>
                     </select>
@@ -364,12 +381,16 @@
             <div class="form-row">
                 <div class="form-group">
                     <label for="reg_servicio">Servicio *</label>
-                    <select name="servicio" id="reg_servicio" onchange="cargarDisponibilidadRegular()">
-                        <option value="">-- Seleccionar Servicio --</option>
-                        @foreach($serviciosDisponibles as $catNombre => $srvList)
+                    <select name="servicio" id="reg_servicio" onchange="actualizarPrecioRegular(); cargarDisponibilidadRegular();">
+                        <option value="" data-precio="" data-precio-texto="">-- Seleccionar Servicio --</option>
+                        @foreach($serviciosPorCategoria as $catNombre => $srvList)
                             <optgroup label="{{ $catNombre }}">
                                 @foreach($srvList as $s)
-                                    <option value="{{ $s }}">{{ $s }}</option>
+                                    <option value="{{ $s['nombre'] }}"
+                                            data-precio="{{ $s['precio'] }}"
+                                            data-precio-texto="{{ $s['precio_texto'] }}">
+                                        {{ $s['nombre'] }} — {{ $s['precio_texto'] }}
+                                    </option>
                                 @endforeach
                             </optgroup>
                         @endforeach
@@ -385,13 +406,20 @@
                     </select>
                 </div>
             </div>
+            <div class="form-group">
+                <label for="reg_precio"><i class="fa-solid fa-tag" style="color: #2563eb;"></i> Precio / Tarifa ($ MXN)</label>
+                <div style="position: relative;">
+                    <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-weight: 600; color: #64748b;">$</span>
+                    <input type="number" step="0.01" min="0" name="precio" id="reg_precio" placeholder="0.00" style="padding-left: 28px;">
+                </div>
+            </div>
             <div class="form-row">
                 <div class="form-group">
                     <label for="fecha">Fecha *</label>
                     <input type="date" name="fecha" id="fecha" min="{{ date('Y-m-d') }}" value="{{ date('Y-m-d') }}" required onchange="cargarDisponibilidadRegular()">
                 </div>
                 <div class="form-group">
-                    <label for="hora_select">Hora Disponible (R-31) *</label>
+                    <label for="hora_select">Hora Disponible *</label>
                     <select name="hora" id="hora_select" required>
                         <option value="">-- Cargar Horarios --</option>
                     </select>
@@ -441,12 +469,16 @@
             <div class="form-row">
                 <div class="form-group">
                     <label for="edit_servicio">Servicio</label>
-                    <select name="servicio" id="edit_servicio">
-                        <option value="">-- Seleccionar Servicio --</option>
-                        @foreach($serviciosDisponibles as $catNombre => $srvList)
+                    <select name="servicio" id="edit_servicio" onchange="actualizarPrecioEdit()">
+                        <option value="" data-precio="" data-precio-texto="">-- Seleccionar Servicio --</option>
+                        @foreach($serviciosPorCategoria as $catNombre => $srvList)
                             <optgroup label="{{ $catNombre }}">
                                 @foreach($srvList as $s)
-                                    <option value="{{ $s }}">{{ $s }}</option>
+                                    <option value="{{ $s['nombre'] }}"
+                                            data-precio="{{ $s['precio'] }}"
+                                            data-precio-texto="{{ $s['precio_texto'] }}">
+                                        {{ $s['nombre'] }} — {{ $s['precio_texto'] }}
+                                    </option>
                                 @endforeach
                             </optgroup>
                         @endforeach
@@ -460,6 +492,13 @@
                             <option value="{{ $p['nombre'] }}">{{ $p['nombre'] }}</option>
                         @endforeach
                     </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="edit_precio"><i class="fa-solid fa-tag" style="color: #f59e0b;"></i> Precio / Tarifa ($ MXN)</label>
+                <div style="position: relative;">
+                    <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-weight: 600; color: #64748b;">$</span>
+                    <input type="number" step="0.01" min="0" name="precio" id="edit_precio" placeholder="0.00" style="padding-left: 28px;">
                 </div>
             </div>
             <div class="form-row">
@@ -568,6 +607,9 @@
         if (document.getElementById('edit_servicio')) {
             document.getElementById('edit_servicio').value = cita.servicio || '';
         }
+        if (document.getElementById('edit_precio')) {
+            document.getElementById('edit_precio').value = cita.precio !== null && cita.precio !== undefined ? cita.precio : '';
+        }
         if (document.getElementById('edit_profesional')) {
             document.getElementById('edit_profesional').value = cita.profesional || '';
         }
@@ -576,6 +618,36 @@
         document.getElementById('edit_motivo').value = cita.motivo;
         document.getElementById('edit_estado').value = cita.estado;
         document.getElementById('modalEdit').classList.add('active');
+    }
+
+    function actualizarPrecioPresencial() {
+        const select = document.getElementById('pres_servicio');
+        const input = document.getElementById('pres_precio');
+        if (!select || !input) return;
+        const opt = select.options[select.selectedIndex];
+        if (opt && opt.getAttribute('data-precio')) {
+            input.value = parseFloat(opt.getAttribute('data-precio')).toFixed(2);
+        }
+    }
+
+    function actualizarPrecioRegular() {
+        const select = document.getElementById('reg_servicio');
+        const input = document.getElementById('reg_precio');
+        if (!select || !input) return;
+        const opt = select.options[select.selectedIndex];
+        if (opt && opt.getAttribute('data-precio')) {
+            input.value = parseFloat(opt.getAttribute('data-precio')).toFixed(2);
+        }
+    }
+
+    function actualizarPrecioEdit() {
+        const select = document.getElementById('edit_servicio');
+        const input = document.getElementById('edit_precio');
+        if (!select || !input) return;
+        const opt = select.options[select.selectedIndex];
+        if (opt && opt.getAttribute('data-precio')) {
+            input.value = parseFloat(opt.getAttribute('data-precio')).toFixed(2);
+        }
     }
 
     // Modal azul de alerta R-32

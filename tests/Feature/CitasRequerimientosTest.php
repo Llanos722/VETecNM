@@ -44,6 +44,7 @@ class CitasRequerimientosTest extends TestCase
                 hora TIME NOT NULL,
                 telefono_contacto VARCHAR(20),
                 servicio VARCHAR(150),
+                precio DECIMAL(10,2),
                 profesional VARCHAR(150),
                 motivo VARCHAR(255) NOT NULL,
                 estado VARCHAR(20) DEFAULT "Pendiente",
@@ -241,6 +242,47 @@ class CitasRequerimientosTest extends TestCase
             'profesional' => 'Dra. Sofía Valenzuela Méndez',
             'fecha' => $fecha,
             'hora' => '16:00:00',
+            'precio' => 350.00,
+        ]);
+    }
+
+    /**
+     * Prueba: Agendar cita asigna el precio oficial por servicio.
+     */
+    public function test_agendamiento_registra_precio_oficial_por_servicio(): void
+    {
+        $userId = DB::table('usuarios')->insertGetId([
+            'nombre' => 'Dueño Test',
+            'email' => 'precio_test@example.com',
+            'telefono' => '3419991122',
+            'password' => bcrypt('password'),
+            'rol' => 'cliente',
+        ]);
+
+        $mascotaId = DB::table('mascotas')->insertGetId([
+            'id_usuario' => $userId,
+            'nombre' => 'Canela',
+            'especie' => 'Perro',
+        ]);
+
+        $fecha = Carbon::now()->addDays(4)->toDateString();
+
+        // 1. Agendar servicio de Esterilización (Precio catálogo: 1200.00)
+        $response = $this->withSession(['user_id' => $userId, 'user_rol' => 'cliente'])
+            ->post('/citas/agendar-cliente', [
+                'id_mascota' => $mascotaId,
+                'servicio' => 'Esterilización y Castración Segura',
+                'profesional' => 'Dra. Sofía Valenzuela Méndez',
+                'fecha' => $fecha,
+                'hora' => '09:00',
+                'motivo' => 'Esterilización programada',
+            ]);
+
+        $response->assertRedirect(route('dashboard'));
+        $this->assertDatabaseHas('citas', [
+            'id_mascota' => $mascotaId,
+            'servicio' => 'Esterilización y Castración Segura',
+            'precio' => 1200.00,
         ]);
     }
 

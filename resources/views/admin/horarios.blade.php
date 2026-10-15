@@ -7,7 +7,7 @@
 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 10px;">
     <div>
         <h2 style="font-size: 1.4rem; color: #0f172a; margin: 0;">
-            <i class="fa-solid fa-clock" style="color: #2563eb;"></i> Configuración de Horarios y Disponibilidad (R-34)
+            <i class="fa-solid fa-clock" style="color: #2563eb;"></i> Configuración de Horarios y Disponibilidad
         </h2>
         <p style="font-size: 0.88rem; color: #64748b; margin: 4px 0 0 0;">
             Administra los horarios de atención de la clínica, descansos/recesos, días no laborables y bloqueos de agenda del personal.
