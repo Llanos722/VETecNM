@@ -1665,11 +1665,13 @@
                             éxito!</h4>
                         <p style="margin: 3px 0 0; font-size: 0.88rem; opacity: 0.95;">
                             Paciente: <strong>{{ $infoCita['paciente'] }}</strong> (Dueño: {{ $infoCita['dueno'] }}) |
-                            Servicio: <strong>{{ $infoCita['servicio'] }}</strong> (@if (!empty($infoCita['precio']))
-                                Tarifa: ${{ number_format($infoCita['precio'], 2) }} MXN
-                            @else
-                                Consulta médica
-                            @endif) | Fecha: <strong>{{ $infoCita['fecha'] }}</strong> a las
+                            Servicio: <strong>{{ $infoCita['servicio'] }}</strong> |
+                            Precio: <strong style="color: #ffffff; background: rgba(0,0,0,0.18); padding: 2px 7px; border-radius: 4px;"><i class="fa-solid fa-tag"></i> ${{ number_format($infoCita['precio'] ?? 0, 2) }} MXN</strong> |
+                            @if (!empty($infoCita['motivo']))
+                                Motivo: <strong>{{ $infoCita['motivo'] }}</strong> |
+                            @endif
+                            Especialista: <strong>{{ $infoCita['profesional'] ?? 'Asignado por clínica' }}</strong> |
+                            Fecha: <strong>{{ $infoCita['fecha'] }}</strong> a las
                             <strong>{{ $infoCita['hora'] }} hrs</strong>.
                             Te contactaremos al teléfono: <strong>{{ $infoCita['telefono'] }}</strong>.
                         </p>
@@ -2062,7 +2064,12 @@
                                             ({{ $cita->mascota_especie }})
                                         </div>
                                         <div class="slot-service" title="{{ $cita->motivo }}">
+                                            <i class="fa-solid fa-notes-medical" style="color: #0284c7; font-size: 0.72rem;"></i>
                                             {{ \Illuminate\Support\Str::limit($cita->motivo, 26) }}
+                                        </div>
+                                        <div class="slot-price" style="font-size: 0.75rem; font-weight: 700; color: #059669; margin-top: 3px; display: inline-flex; align-items: center; gap: 4px;">
+                                            <i class="fa-solid fa-tag" style="font-size: 0.7rem;"></i>
+                                            ${{ number_format($cita->precio ?? \App\Services\CitaService::getPrecioServicio($cita->servicio), 2) }} MXN
                                         </div>
                                     </div>
                                 @empty

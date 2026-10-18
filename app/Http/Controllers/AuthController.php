@@ -17,6 +17,10 @@ class AuthController extends Controller
     public function showLoginForm()
     {
         if (session()->has('user_id')) {
+            if (in_array(session('user_rol'), ['admin', 'recepcionista'], true)) {
+                return redirect()->route('admin.dashboard');
+            }
+
             return redirect()->route('dashboard');
         }
 
@@ -64,6 +68,12 @@ class AuthController extends Controller
             'user_email' => $usuario->email,
             'user_rol' => $usuario->rol,
         ]);
+
+        // Redirección directa por perfil:
+        // Administrador se dirige directo y sin escalas al Dashboard de administración
+        if (in_array($usuario->rol, ['admin', 'recepcionista'], true)) {
+            return redirect()->route('admin.dashboard');
+        }
 
         return redirect()->route('dashboard');
     }
@@ -191,30 +201,37 @@ class AuthController extends Controller
             return redirect()->route('login')->with('error', 'acceso_denegado');
         }
 
+        // Si es administrador o recepcionista, dirigir directamente a su panel de administración
+        if (in_array(session('user_rol'), ['admin', 'recepcionista'], true)) {
+            return redirect()->route('admin.dashboard');
+        }
+
         $userId = session('user_id');
-        $userRol = session('user_rol');
+        $usuario = DB::table('usuarios')->where('id_usuario', $userId)->first();
 
-        $totalUsuarios = DB::table('usuarios')->count();
-        $totalMascotas = DB::table('mascotas')->count();
-        $totalCategorias = DB::table('categorias')->count();
-        $totalProductos = DB::table('productos')->count();
-        $totalCitas = DB::table('citas')->count();
-
-        // Get user's pets or all pets if admin
+        // Mascotas del cliente con estadísticas de consultas y citas
         $misMascotas = DB::table('mascotas')
             ->where('id_usuario', $userId)
             ->get();
 
-        $citasQuery = DB::table('citas')
-            ->join('mascotas', 'citas.id_mascota', '=', 'mascotas.id_mascota')
-            ->select('citas.*', 'mascotas.nombre as mascota_nombre', 'mascotas.especie');
-
-        if ($userRol !== 'admin') {
-            $citasQuery->where('mascotas.id_usuario', $userId);
+        foreach ($misMascotas as $m) {
+            $m->total_citas = DB::table('citas')->where('id_mascota', $m->id_mascota)->count();
+            $m->proxima_cita = DB::table('citas')
+                ->where('id_mascota', $m->id_mascota)
+                ->where('fecha', '>=', now()->toDateString())
+                ->whereIn('estado', ['Pendiente', 'Confirmada'])
+                ->orderBy('fecha', 'asc')
+                ->orderBy('hora', 'asc')
+                ->first();
         }
 
-        $citas = $citasQuery->orderBy('citas.fecha', 'asc')
-            ->orderBy('citas.hora', 'asc')
+        // Citas agendadas del cliente
+        $citas = DB::table('citas')
+            ->join('mascotas', 'citas.id_mascota', '=', 'mascotas.id_mascota')
+            ->where('mascotas.id_usuario', $userId)
+            ->select('citas.*', 'mascotas.nombre as mascota_nombre', 'mascotas.especie', 'mascotas.raza', 'mascotas.peso as mascota_peso')
+            ->orderBy('citas.fecha', 'desc')
+            ->orderBy('citas.hora', 'desc')
             ->get();
 
         $profesionales = CitaService::getProfesionales();
@@ -227,11 +244,7 @@ class AuthController extends Controller
         }
 
         return view('dashboard', compact(
-            'totalUsuarios',
-            'totalMascotas',
-            'totalCategorias',
-            'totalProductos',
-            'totalCitas',
+            'usuario',
             'misMascotas',
             'citas',
             'profesionales',
@@ -339,9 +352,11 @@ class AuthController extends Controller
             $citaData['precio'] = $precio;
         }
 
-        DB::table('citas')->insert($citaData);
+        $citaId = DB::table('citas')->insertGetId($citaData);
 
-        return redirect()->route('dashboard')->with('success', '¡Cita médica agendada exitosamente!');
+        return redirect()->route('dashboard')
+            ->with('success', '¡Cita médica agendada exitosamente!')
+            ->with('nueva_cita_id', $citaId);
     }
 
     /**
@@ -369,6 +384,49 @@ class AuthController extends Controller
         ]);
 
         return redirect()->route('dashboard')->with('success', '¡Tu mascota ha sido registrada correctamente!');
+    }
+
+    /**
+     * Descarga / Visualización formal del comprobante de cita médica (Voucher/Ticket de Cita).
+     */
+    public function descargarComprobante($id)
+    {
+        if (! session()->has('user_id')) {
+            return redirect()->route('login')->with('error', 'acceso_denegado');
+        }
+
+        $userId = session('user_id');
+        $userRol = session('user_rol');
+
+        $citaQuery = DB::table('citas')
+            ->join('mascotas', 'citas.id_mascota', '=', 'mascotas.id_mascota')
+            ->join('usuarios', 'mascotas.id_usuario', '=', 'usuarios.id_usuario')
+            ->where('citas.id_cita', $id)
+            ->select(
+                'citas.*',
+                'mascotas.id_mascota',
+                'mascotas.nombre as mascota_nombre',
+                'mascotas.especie',
+                'mascotas.raza',
+                'mascotas.peso as mascota_peso',
+                'mascotas.id_usuario',
+                'usuarios.nombre as dueno_nombre',
+                'usuarios.email as dueno_email',
+                'usuarios.telefono as dueno_telefono'
+            );
+
+        // Si no es admin/recepcionista, solo puede consultar el comprobante de su propia mascota
+        if (! in_array($userRol, ['admin', 'recepcionista'], true)) {
+            $citaQuery->where('mascotas.id_usuario', $userId);
+        }
+
+        $cita = $citaQuery->first();
+
+        if (! $cita) {
+            return redirect()->route('dashboard')->with('error', 'La cita solicitada no existe o no tienes autorización para visualizar su comprobante.');
+        }
+
+        return view('citas.comprobante', compact('cita'));
     }
 
     /**

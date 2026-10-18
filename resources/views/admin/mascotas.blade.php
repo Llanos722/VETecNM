@@ -40,6 +40,10 @@
                             <span>{{ $m->dueno_nombre }}</span>
                         </td>
                         <td style="text-align: right; white-space: nowrap;">
+                            <a href="{{ route('admin.mascotas.historial', $m->id_mascota) }}" class="btn-action" style="background: #2563eb; color: white;" title="Ver Historial Clínico">
+                                <i class="fa-solid fa-clock-rotate-left"></i> Historial
+                            </a>
+
                             <button class="btn-action btn-edit" onclick='openEditModal(@json($m))' title="Editar Mascota">
                                 <i class="fa-solid fa-pen"></i> Editar
                             </button>
@@ -70,7 +74,7 @@
             <h4><i class="fa-solid fa-paw" style="color: #059669;"></i> Registrar Mascota</h4>
             <button class="modal-close" onclick="closeModal('modalCreate')">&times;</button>
         </div>
-        <form action="{{ route('admin.mascotas.store') }}" method="POST">
+                <form action="{{ route('admin.mascotas.store') }}" method="POST">
             @csrf
             <div class="form-group">
                 <label for="id_usuario">Dueño / Cliente *</label>
@@ -80,11 +84,17 @@
                         <option value="{{ $u->id_usuario }}">{{ $u->nombre }}</option>
                     @endforeach
                 </select>
+                    @error('id_usuario')
+                        <div class="text-red-600 text-sm mt-1">{{ $message }}</div>
+                    @enderror
             </div>
             <div class="form-row">
                 <div class="form-group">
                     <label for="nombre">Nombre de la Mascota *</label>
                     <input type="text" name="nombre" id="nombre" placeholder="Ej: Firulais, Michi..." required>
+                    @error('nombre')
+                        <div class="text-red-600 text-sm mt-1">{{ $message }}</div>
+                    @enderror
                 </div>
                 <div class="form-group">
                     <label for="especie">Especie *</label>
@@ -96,16 +106,26 @@
                         <option value="Reptil">Reptil</option>
                         <option value="Otro">Otro</option>
                     </select>
+                    @error('especie')
+                        <div class="text-red-600 text-sm mt-1">{{ $message }}</div>
+                    @enderror
+                    
                 </div>
             </div>
             <div class="form-row">
                 <div class="form-group">
                     <label for="raza">Raza</label>
                     <input type="text" name="raza" id="raza" placeholder="Ej: Poodle, Siamés...">
+                    @error('raza')
+                        <div class="text-red-600 text-sm mt-1">{{ $message }}</div>
+                    @enderror
                 </div>
                 <div class="form-group">
                     <label for="peso">Peso en kg</label>
                     <input type="number" step="0.01" name="peso" id="peso" placeholder="Ej: 5.5">
+                    @error('peso')
+                        <div class="text-red-600 text-sm mt-1">{{ $message }}</div>
+                    @enderror
                 </div>
             </div>
             <div class="modal-footer">
@@ -174,7 +194,7 @@
     }
 
     function openEditModal(mascota) {
-        document.getElementById('formEditMascota').action = "/admin/mascotas/" + mascota.id_mascota;
+                document.getElementById('formEditMascota').action = "/admin/mascotas/" + mascota.id_mascota;
         document.getElementById('edit_id_usuario').value = mascota.id_usuario;
         document.getElementById('edit_nombre').value = mascota.nombre;
         document.getElementById('edit_especie').value = mascota.especie;

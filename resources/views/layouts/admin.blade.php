@@ -336,6 +336,46 @@
             border-top: 1px solid #e2e8f0;
             padding-top: 1rem;
         }
+
+        /* ===== GLOBAL PRINT STYLES ===== */
+        @media print {
+            /* Ocultar toda la navegación y chrome del admin */
+            .sidebar,
+            .topbar,
+            .sidebar-footer,
+            .alert-toast,
+            .modal-backdrop,
+            .btn-action,
+            .btn-add,
+            .btn-edit,
+            .btn-delete,
+            .btn-status,
+            .no-print {
+                display: none !important;
+            }
+
+            /* Quitar el margen del sidebar */
+            body {
+                display: block !important;
+                background: #fff !important;
+                font-family: 'Poppins', sans-serif;
+            }
+
+            .main-wrapper {
+                margin-left: 0 !important;
+                padding: 0 !important;
+            }
+
+            .content-body {
+                padding: 0 !important;
+            }
+
+            .card-custom {
+                box-shadow: none !important;
+                border: 1px solid #e2e8f0 !important;
+                margin-bottom: 12px !important;
+            }
+        }
     </style>
 </head>
 <body>
@@ -380,8 +420,8 @@
                 </a>
             </li>
             <li>
-                <a href="{{ route('dashboard') }}">
-                    <i class="fa-solid fa-house"></i> Vista Cliente
+                <a href="{{ route('home') }}" target="_blank">
+                    <i class="fa-solid fa-globe"></i> Portal Público
                 </a>
             </li>
         </ul>

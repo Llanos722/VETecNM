@@ -31,7 +31,9 @@ Route::post('/forgot-password', [AuthController::class, 'resetPassword'])->name(
 
 // Panel General (Clientes) y Agendamiento de Clientes Registrados (R-30)
 Route::get('/dashboard', [AuthController::class, 'dashboard'])->name('dashboard');
+Route::post('/dashboard/mascota', [AuthController::class, 'registerPet'])->name('mascota.store');
 Route::post('/citas/agendar-cliente', [AuthController::class, 'agendarCitaCliente'])->name('citas.agendar.cliente');
+Route::get('/citas/{id}/comprobante', [AuthController::class, 'descargarComprobante'])->name('citas.comprobante');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 // =========================================================================
@@ -43,6 +45,7 @@ Route::middleware(['admin'])->prefix('admin')->name('admin.')->group(function ()
 
     // Citas Médicas y Agendamiento Presencial/Telefónico (R-32, R-33)
     Route::get('/citas', [AdminController::class, 'citasIndex'])->name('citas.index');
+    Route::get('/citas/reporte-dia', [AdminController::class, 'citasReporteDia'])->name('citas.reporte-dia');
     Route::post('/citas', [AdminController::class, 'citasStore'])->name('citas.store');
     Route::post('/citas/presencial', [AdminController::class, 'citasPresencialStore'])->name('citas.presencial.store');
     Route::put('/citas/{id}', [AdminController::class, 'citasUpdate'])->name('citas.update');
@@ -70,6 +73,7 @@ Route::middleware(['admin'])->prefix('admin')->name('admin.')->group(function ()
     Route::post('/mascotas', [AdminController::class, 'mascotasStore'])->name('mascotas.store');
     Route::put('/mascotas/{id}', [AdminController::class, 'mascotasUpdate'])->name('mascotas.update');
     Route::delete('/mascotas/{id}', [AdminController::class, 'mascotasDestroy'])->name('mascotas.destroy');
+    Route::get('/mascotas/{id}/historial', [AdminController::class, 'mascotasHistorial'])->name('mascotas.historial');
 
     // Usuarios
     Route::get('/usuarios', [AdminController::class, 'usuariosIndex'])->name('usuarios.index');
@@ -79,6 +83,8 @@ Route::middleware(['admin'])->prefix('admin')->name('admin.')->group(function ()
 
     // Productos y Categorías
     Route::get('/productos', [AdminController::class, 'productosIndex'])->name('productos.index');
+    Route::get('/productos/reporte-pdf', [AdminController::class, 'productosPdf'])->name('productos.pdf');
+    Route::get('/categorias/reporte-pdf', [AdminController::class, 'categoriasPdf'])->name('categorias.pdf');
     Route::post('/productos', [AdminController::class, 'productosStore'])->name('productos.store');
     Route::put('/productos/{id}', [AdminController::class, 'productosUpdate'])->name('productos.update');
     Route::delete('/productos/{id}', [AdminController::class, 'productosDestroy'])->name('productos.destroy');

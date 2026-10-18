@@ -51,7 +51,7 @@
                     <th>Mascota</th>
                     <th>Dueño</th>
                     <th>Fecha & Hora</th>
-                    <th>Motivo</th>
+                    <th>Motivo & Precio</th>
                     <th>Estado</th>
                     <th>Acciones</th>
                 </tr>
@@ -63,7 +63,12 @@
                         <td><i class="fa-solid fa-paw" style="color: #64748b;"></i> <strong>{{ $c->mascota_nombre }}</strong> ({{ $c->especie }})</td>
                         <td>{{ $c->dueno_nombre }}</td>
                         <td><i class="fa-regular fa-calendar"></i> {{ $c->fecha }} a las {{ \Carbon\Carbon::parse($c->hora)->format('h:i A') }}</td>
-                        <td>{{ $c->motivo }}</td>
+                        <td>
+                            <div style="font-weight: 600; color: #1e293b;">{{ $c->motivo }}</div>
+                            <span style="display: inline-flex; align-items: center; gap: 4px; font-size: 0.76rem; font-weight: 700; color: #059669; margin-top: 3px;">
+                                <i class="fa-solid fa-tag"></i> ${{ number_format($c->precio ?? \App\Services\CitaService::getPrecioServicio($c->servicio), 2) }} MXN
+                            </span>
+                        </td>
                         <td><span class="status-badge status-{{ $c->estado }}">{{ $c->estado }}</span></td>
                         <td>
                             <form action="{{ route('admin.citas.status', $c->id_cita) }}" method="POST" style="display:inline;">

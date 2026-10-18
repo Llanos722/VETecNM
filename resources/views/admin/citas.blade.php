@@ -46,13 +46,103 @@
         </div>
     @endif
 
-    <!-- Filter Buttons -->
-    <div style="display: flex; gap: 10px; margin-bottom: 1.5rem; flex-wrap: wrap;">
-        <a href="{{ route('admin.citas.index') }}" class="btn-action" style="background: {{ !$estadoFilter ? '#334155' : '#e2e8f0' }}; color: {{ !$estadoFilter ? 'white' : '#334155' }}; font-size: 0.82rem; padding: 6px 14px;">Todas</a>
-        <a href="{{ route('admin.citas.index', ['estado' => 'Pendiente']) }}" class="btn-action" style="background: {{ $estadoFilter === 'Pendiente' ? '#d97706' : '#e2e8f0' }}; color: {{ $estadoFilter === 'Pendiente' ? 'white' : '#334155' }}; font-size: 0.82rem; padding: 6px 14px;">Pendientes</a>
-        <a href="{{ route('admin.citas.index', ['estado' => 'Confirmada']) }}" class="btn-action" style="background: {{ $estadoFilter === 'Confirmada' ? '#059669' : '#e2e8f0' }}; color: {{ $estadoFilter === 'Confirmada' ? 'white' : '#334155' }}; font-size: 0.82rem; padding: 6px 14px;">Confirmadas</a>
-        <a href="{{ route('admin.citas.index', ['estado' => 'Finalizada']) }}" class="btn-action" style="background: {{ $estadoFilter === 'Finalizada' ? '#2563eb' : '#e2e8f0' }}; color: {{ $estadoFilter === 'Finalizada' ? 'white' : '#334155' }}; font-size: 0.82rem; padding: 6px 14px;">Finalizadas</a>
-        <a href="{{ route('admin.citas.index', ['estado' => 'Cancelada']) }}" class="btn-action" style="background: {{ $estadoFilter === 'Cancelada' ? '#dc2626' : '#e2e8f0' }}; color: {{ $estadoFilter === 'Cancelada' ? 'white' : '#334155' }}; font-size: 0.82rem; padding: 6px 14px;">Canceladas</a>
+    @php
+        $fechaActiva = $fechaFilter ?: date('Y-m-d');
+        $hayFiltroFecha = !empty($fechaFilter);
+    @endphp
+
+    <!-- Botones de Filtro por Estado (conservando fecha si está seleccionada) -->
+    <div style="display: flex; gap: 10px; margin-bottom: 1rem; flex-wrap: wrap; align-items: center; justify-content: space-between;">
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <a href="{{ route('admin.citas.index', array_filter(['fecha' => $fechaFilter])) }}" class="btn-action" style="background: {{ !$estadoFilter ? '#1e3a8a' : '#e2e8f0' }}; color: {{ !$estadoFilter ? 'white' : '#334155' }}; font-size: 0.82rem; padding: 6px 14px; font-weight: 600;">Todos los Estados</a>
+            <a href="{{ route('admin.citas.index', array_filter(['estado' => 'Pendiente', 'fecha' => $fechaFilter])) }}" class="btn-action" style="background: {{ $estadoFilter === 'Pendiente' ? '#d97706' : '#e2e8f0' }}; color: {{ $estadoFilter === 'Pendiente' ? 'white' : '#334155' }}; font-size: 0.82rem; padding: 6px 14px; font-weight: 600;">Pendientes</a>
+            <a href="{{ route('admin.citas.index', array_filter(['estado' => 'Confirmada', 'fecha' => $fechaFilter])) }}" class="btn-action" style="background: {{ $estadoFilter === 'Confirmada' ? '#059669' : '#e2e8f0' }}; color: {{ $estadoFilter === 'Confirmada' ? 'white' : '#334155' }}; font-size: 0.82rem; padding: 6px 14px; font-weight: 600;">Confirmadas</a>
+            <a href="{{ route('admin.citas.index', array_filter(['estado' => 'Finalizada', 'fecha' => $fechaFilter])) }}" class="btn-action" style="background: {{ $estadoFilter === 'Finalizada' ? '#2563eb' : '#e2e8f0' }}; color: {{ $estadoFilter === 'Finalizada' ? 'white' : '#334155' }}; font-size: 0.82rem; padding: 6px 14px; font-weight: 600;">Finalizadas</a>
+            <a href="{{ route('admin.citas.index', array_filter(['estado' => 'Cancelada', 'fecha' => $fechaFilter])) }}" class="btn-action" style="background: {{ $estadoFilter === 'Cancelada' ? '#dc2626' : '#e2e8f0' }}; color: {{ $estadoFilter === 'Cancelada' ? 'white' : '#334155' }}; font-size: 0.82rem; padding: 6px 14px; font-weight: 600;">Canceladas</a>
+        </div>
+
+        @if($hayFiltroFecha)
+            <div>
+                <a href="{{ route('admin.citas.index', array_filter(['estado' => $estadoFilter])) }}" class="btn-action" style="background: #f1f5f9; color: #0f172a; border: 1.5px solid #cbd5e1; font-size: 0.82rem; padding: 6px 14px; font-weight: 700; text-decoration: none;">
+                    <i class="fa-solid fa-layer-group"></i> Ver Todas en General
+                </a>
+            </div>
+        @endif
+    </div>
+
+    {{-- Barra de Citas Médicas por Día & Descarga Directa de PDF (Sin Redirigir a Otra Parte) --}}
+    <div style="display:flex; align-items:center; gap:16px; background:linear-gradient(135deg,#0f172a 0%, #1e3a8a 100%); border-radius:12px; padding:16px 22px; margin-bottom:1.5rem; flex-wrap:wrap; box-shadow: 0 4px 15px rgba(15,23,42,0.12); border: 1px solid rgba(255,255,255,0.1);">
+        <div style="width: 46px; height: 46px; border-radius: 10px; background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.35); display: flex; align-items: center; justify-content: center; color: #38bdf8; font-size: 1.4rem; flex-shrink: 0;">
+            <i class="fa-solid fa-calendar-day"></i>
+        </div>
+        
+        <div style="flex:1; min-width:220px;">
+            <div style="color:#fff; font-weight:800; font-size:0.96rem; display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                @if($hayFiltroFecha)
+                    <span><i class="fa-solid fa-filter" style="color: #38bdf8;"></i> Citas del Día:</span>
+                    <span style="color:#38bdf8; font-weight:700;">
+                        {{ \Carbon\Carbon::parse($fechaFilter)->isoFormat('dddd D [de] MMMM [de] YYYY') }}
+                    </span>
+                    <span style="background: rgba(56, 189, 248, 0.2); color: #e0f2fe; border: 1px solid rgba(56, 189, 248, 0.4); padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: 700;">
+                        {{ $citas->count() }} cita(s)
+                    </span>
+                @else
+                    <span><i class="fa-solid fa-layer-group" style="color: #93c5fd;"></i> Mostrando Todas las Citas en General</span>
+                    <span style="background: rgba(255, 255, 255, 0.15); color: #fff; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem;">
+                        {{ $citas->count() }} totales
+                    </span>
+                @endif
+            </div>
+            <div style="color:#cbd5e1; font-size:0.8rem; margin-top:3px;">
+                @if($hayFiltroFecha)
+                    Mostrando citas programadas para esta fecha. Usa el calendario para cambiar el día o "Todas en General" para ver el historial global.
+                @else
+                    Selecciona una fecha en el calendario para filtrar las citas de ese día y generar su reporte PDF.
+                @endif
+            </div>
+        </div>
+
+        <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+            {{-- Filtro Calendario: al cambiar actualiza la tabla y barra al día seleccionado --}}
+            <div style="display:flex; align-items:center; gap:6px;">
+                <label for="inputFechaCitas" style="color:#94a3b8; font-size:0.8rem; font-weight:600;"><i class="fa-regular fa-calendar"></i> Calendario:</label>
+                <input type="date" id="inputFechaCitas"
+                       value="{{ $hayFiltroFecha ? $fechaFilter : date('Y-m-d') }}"
+                       onchange="cambiarFechaCitas(this.value)"
+                       style="padding:8px 12px; border-radius:8px; border:1.5px solid rgba(255,255,255,0.3);
+                              background:rgba(255,255,255,0.15); color:#fff; font-size:0.88rem;
+                              font-weight:700; outline:none; cursor:pointer;"
+                       title="Selecciona una fecha en el calendario para filtrar las citas médicas"
+                       onmouseover="this.style.borderColor='#38bdf8'" onmouseout="this.style.borderColor='rgba(255,255,255,0.3)'">
+            </div>
+
+            {{-- Botón para ver Hoy --}}
+            <button type="button" onclick="cambiarFechaCitas('{{ date('Y-m-d') }}')"
+                    class="btn-action"
+                    style="background: {{ ($fechaFilter === date('Y-m-d')) ? '#2563eb' : 'rgba(255,255,255,0.12)' }}; color:#fff; padding:8px 12px; font-size:0.8rem; border-radius:8px; border:1px solid rgba(255,255,255,0.25); cursor:pointer;"
+                    title="Ver citas del día de hoy">
+                Hoy
+            </button>
+
+            {{-- Botón Todas en General --}}
+            <a href="{{ route('admin.citas.index', array_filter(['estado' => $estadoFilter])) }}"
+               class="btn-action"
+               style="background: {{ !$hayFiltroFecha ? '#2563eb' : 'rgba(255,255,255,0.12)' }}; color:#fff; padding:8px 12px; font-size:0.8rem; border-radius:8px; border:1px solid rgba(255,255,255,0.25); text-decoration:none;"
+               title="Mostrar todas las citas médicas sin filtrar por fecha">
+                Todas en General
+            </a>
+
+            {{-- Botón Descargar PDF DIRECTO sin redirigir a otra parte --}}
+            <button type="button" id="btnDescargarPdfDia" onclick="descargarPdfDirecto()"
+                    style="display:inline-flex; align-items:center; gap:7px; background:#059669;
+                           color:white; border:none; border-radius:8px; padding:8px 18px;
+                           font-size:0.88rem; font-weight:700; cursor:pointer;
+                           box-shadow:0 4px 12px rgba(5,150,105,0.4); transition:all 0.2s;"
+                    title="Descargar PDF de las citas de este día directamente"
+                    onmouseover="this.style.background='#047857'" onmouseout="this.style.background='#059669'">
+                <i class="fa-solid fa-file-arrow-down"></i> Descargar PDF
+            </button>
+        </div>
     </div>
 
     <div class="table-responsive">
@@ -111,29 +201,48 @@
                         </td>
                         <td><span class="status-badge status-{{ $c->estado }}">{{ $c->estado }}</span></td>
                         <td style="text-align: right; white-space: nowrap;">
-                            <!-- Change Status Quick Form -->
-                            <form action="{{ route('admin.citas.status', $c->id_cita) }}" method="POST" style="display:inline-block;">
-                                @csrf
-                                @method('PATCH')
-                                <select name="estado" onchange="this.form.submit()" style="padding: 4px 8px; font-size: 0.78rem; border-radius: 6px; border: 1px solid #cbd5e1; cursor: pointer;">
-                                    <option value="Pendiente" {{ $c->estado === 'Pendiente' ? 'selected' : '' }}>Pendiente</option>
-                                    <option value="Confirmada" {{ $c->estado === 'Confirmada' ? 'selected' : '' }}>Confirmada</option>
-                                    <option value="Finalizada" {{ $c->estado === 'Finalizada' ? 'selected' : '' }}>Finalizada</option>
-                                    <option value="Cancelada" {{ $c->estado === 'Cancelada' ? 'selected' : '' }}>Cancelada</option>
-                                </select>
-                            </form>
+                            @if(in_array($c->estado, ['Finalizada', 'Cancelada']))
+                                {{-- Cita cerrada: solo lectura --}}
+                                <span style="display:inline-flex; align-items:center; gap:5px; font-size:0.78rem; color:#64748b; background:#f1f5f9; border:1px solid #cbd5e1; padding:4px 10px; border-radius:6px;">
+                                    <i class="fa-solid fa-lock"></i> Cerrada
+                                </span>
 
-                            <button class="btn-action btn-edit" onclick='openEditModal(@json($c))' title="Editar Cita">
-                                <i class="fa-solid fa-pen"></i>
-                            </button>
+                                <form action="{{ route('admin.citas.destroy', $c->id_cita) }}" method="POST" style="display:inline-block;" onsubmit="return confirm('¿Seguro que deseas eliminar esta cita médica?');">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn-action btn-delete" title="Eliminar Cita">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </button>
+                                </form>
+                            @else
+                                {{-- Cita activa: cambio rápido de estado --}}
+                                <form action="{{ route('admin.citas.status', $c->id_cita) }}" method="POST" style="display:inline-block;">
+                                    @csrf
+                                    @method('PATCH')
+                                    <select name="estado" onchange="this.form.submit()" style="padding: 4px 8px; font-size: 0.78rem; border-radius: 6px; border: 1px solid #cbd5e1; cursor: pointer;">
+                                        <option value="Pendiente" {{ $c->estado === 'Pendiente' ? 'selected' : '' }}>Pendiente</option>
+                                        <option value="Confirmada" {{ $c->estado === 'Confirmada' ? 'selected' : '' }}>Confirmada</option>
+                                        <option value="Finalizada" {{ $c->estado === 'Finalizada' ? 'selected' : '' }}>Finalizada</option>
+                                        <option value="Cancelada" {{ $c->estado === 'Cancelada' ? 'selected' : '' }}>Cancelada</option>
+                                    </select>
+                                </form>
 
-                            <form action="{{ route('admin.citas.destroy', $c->id_cita) }}" method="POST" style="display:inline-block;" onsubmit="return confirm('¿Seguro que deseas eliminar esta cita médica?');">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="btn-action btn-delete" title="Eliminar Cita">
-                                    <i class="fa-solid fa-trash"></i>
+                                <a href="{{ route('citas.comprobante', $c->id_cita) }}" target="_blank" class="btn-action" style="background: #059669; color: white; padding: 5px 8px; font-size: 0.8rem; text-decoration: none;" title="Ver e Imprimir Comprobante Oficial">
+                                    <i class="fa-solid fa-file-invoice-dollar"></i>
+                                </a>
+
+                                <button class="btn-action btn-edit" onclick='openEditModal(@json($c))' title="Editar Cita">
+                                    <i class="fa-solid fa-pen"></i>
                                 </button>
-                            </form>
+
+                                <form action="{{ route('admin.citas.destroy', $c->id_cita) }}" method="POST" style="display:inline-block;" onsubmit="return confirm('¿Seguro que deseas eliminar esta cita médica?');">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn-action btn-delete" title="Eliminar Cita">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </button>
+                                </form>
+                            @endif
                         </td>
                     </tr>
                 @empty
@@ -770,14 +879,55 @@
             });
     }
 
-    // Auto-mostrar alerta azul si se disparó desde el backend (R-32)
-    @if(session('horario_no_disponible_alerta'))
-        window.addEventListener('DOMContentLoaded', function() {
-            mostrarAlertaAzul(
-                @json(session('horario_no_disponible_alerta')['mensaje']),
-                @json(session('horario_no_disponible_alerta')['detalle'] ?? '')
-            );
-        });
-    @endif
+    // Filtrado de citas por fecha
+    function cambiarFechaCitas(nuevaFecha) {
+        if (!nuevaFecha) return;
+        const url = new URL(window.location.href);
+        url.searchParams.set('fecha', nuevaFecha);
+        window.location.href = url.toString();
+    }
+
+    // Descarga directa en PDF sin redirigir a otra pantalla
+    function descargarPdfDirecto() {
+        const inputFecha = document.getElementById('inputFechaCitas');
+        const fecha = (inputFecha ? inputFecha.value : '') || '{{ date("Y-m-d") }}';
+        const btn = document.getElementById('btnDescargarPdfDia');
+        const originalContent = btn ? btn.innerHTML : '';
+
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Generando PDF...';
+        }
+
+        let printFrame = document.getElementById('silentPdfPrintFrame');
+        if (!printFrame) {
+            printFrame = document.createElement('iframe');
+            printFrame.id = 'silentPdfPrintFrame';
+            printFrame.style.position = 'fixed';
+            printFrame.style.right = '0';
+            printFrame.style.bottom = '0';
+            printFrame.style.width = '0';
+            printFrame.style.height = '0';
+            printFrame.style.border = 'none';
+            document.body.appendChild(printFrame);
+        }
+
+        printFrame.onload = function() {
+            setTimeout(function() {
+                try {
+                    printFrame.contentWindow.focus();
+                    printFrame.contentWindow.print();
+                } catch(e) {
+                    console.error('Error al imprimir:', e);
+                }
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = originalContent;
+                }
+            }, 400);
+        };
+
+        printFrame.src = `{{ route('admin.citas.reporte-dia') }}?fecha=${encodeURIComponent(fecha)}&auto_print=1`;
+    }
 </script>
 @endsection

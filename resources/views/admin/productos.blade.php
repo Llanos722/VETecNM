@@ -11,9 +11,14 @@
             <h3><i class="fa-solid fa-tags" style="color: #7c3aed;"></i> Categorías de Productos</h3>
             <span style="font-size: 0.85rem; color: #64748b;">Organización y clasificación del catálogo general.</span>
         </div>
-        <button class="btn-action btn-add" style="background: #7c3aed;" onclick="openCreateCategoriaModal()">
-            <i class="fa-solid fa-plus"></i> Nueva Categoría
-        </button>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <a href="{{ route('admin.categorias.pdf') }}" target="_blank" class="btn-action" style="background: #7c3aed; color: white;" title="Descargar Reporte Formal de Categorías en PDF">
+                <i class="fa-solid fa-file-pdf"></i> Descargar Categorías (PDF)
+            </a>
+            <button class="btn-action btn-add" style="background: #4f46e5;" onclick="openCreateCategoriaModal()">
+                <i class="fa-solid fa-plus"></i> Nueva Categoría
+            </button>
+        </div>
     </div>
 
     <div class="table-responsive">
@@ -35,6 +40,10 @@
                         <td>{{ $cat->descripcion ?? 'Sin descripción' }}</td>
                         <td><span class="status-badge status-Finalizada">{{ $cat->total_productos }} producto(s)</span></td>
                         <td style="text-align: right; white-space: nowrap;">
+                            <a href="{{ route('admin.productos.pdf', ['categoria_id' => $cat->id_categoria]) }}" target="_blank" class="btn-action" style="background: #0284c7; color: white; padding: 5px 9px; font-size: 0.8rem; text-decoration: none;" title="Descargar catálogo de esta categoría en PDF">
+                                <i class="fa-solid fa-file-pdf"></i> PDF
+                            </a>
+
                             <button class="btn-action btn-edit" onclick='openEditCategoriaModal(@json($cat))' title="Editar Categoría">
                                 <i class="fa-solid fa-pen"></i> Editar
                             </button>
@@ -65,9 +74,14 @@
             <h3><i class="fa-solid fa-boxes-packing" style="color: #2563eb;"></i> Productos y Artículos</h3>
             <span style="font-size: 0.85rem; color: #64748b;">Inventario de alimentos, accesorios y productos veterinarios.</span>
         </div>
-        <button class="btn-action btn-add" onclick="openCreateProductoModal()">
-            <i class="fa-solid fa-plus"></i> Agregar Producto
-        </button>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <a href="{{ route('admin.productos.pdf') }}" target="_blank" class="btn-action" style="background: #059669; color: white;" title="Descargar Catálogo Completo separado por Categorías en PDF">
+                <i class="fa-solid fa-file-pdf"></i> Descargar Catálogo por Categorías (PDF)
+            </a>
+            <button class="btn-action btn-add" onclick="openCreateProductoModal()">
+                <i class="fa-solid fa-plus"></i> Agregar Producto
+            </button>
+        </div>
     </div>
 
     <div class="table-responsive">

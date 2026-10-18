@@ -62,6 +62,7 @@ class AdminController extends Controller
     public function citasIndex(Request $request)
     {
         $estadoFilter = $request->query('estado');
+        $fechaFilter = $request->query('fecha');
 
         $query = DB::table('citas')
             ->join('mascotas', 'citas.id_mascota', '=', 'mascotas.id_mascota')
@@ -78,6 +79,10 @@ class AdminController extends Controller
 
         if ($estadoFilter && in_array($estadoFilter, ['Pendiente', 'Confirmada', 'Finalizada', 'Cancelada'])) {
             $query->where('citas.estado', $estadoFilter);
+        }
+
+        if ($fechaFilter) {
+            $query->where('citas.fecha', $fechaFilter);
         }
 
         $citas = $query->orderBy('citas.fecha', 'asc')
@@ -112,7 +117,8 @@ class AdminController extends Controller
             'serviciosDisponibles',
             'serviciosPorCategoria',
             'serviciosLista',
-            'estadoFilter'
+            'estadoFilter',
+            'fechaFilter'
         ));
     }
 
@@ -307,6 +313,12 @@ class AdminController extends Controller
 
     public function citasUpdate(Request $request, $id)
     {
+        // Protect finalized/cancelled appointments from being modified
+        $citaActual = DB::table('citas')->where('id_cita', $id)->first();
+        if ($citaActual && in_array($citaActual->estado, ['Finalizada', 'Cancelada'])) {
+            return redirect()->back()->with('alerta_error_general', 'Las citas Finalizadas o Canceladas no pueden ser modificadas.');
+        }
+
         $request->validate([
             'id_mascota' => 'required|exists:mascotas,id_mascota',
             'fecha' => 'required|date',
@@ -377,6 +389,12 @@ class AdminController extends Controller
             'estado' => 'required|in:Pendiente,Confirmada,Finalizada,Cancelada',
         ]);
 
+        // Protect finalized/cancelled appointments from status changes
+        $citaActual = DB::table('citas')->where('id_cita', $id)->first();
+        if ($citaActual && in_array($citaActual->estado, ['Finalizada', 'Cancelada'])) {
+            return redirect()->back()->with('alerta_error_general', 'Las citas Finalizadas o Canceladas no pueden modificar su estado.');
+        }
+
         DB::table('citas')->where('id_cita', $id)->update([
             'estado' => $request->estado,
         ]);
@@ -389,6 +407,36 @@ class AdminController extends Controller
         DB::table('citas')->where('id_cita', $id)->delete();
 
         return redirect()->route('admin.citas.index')->with('success', 'Cita médica eliminada.');
+    }
+
+    /**
+     * Reporte de citas por día — abre en pestaña nueva para imprimir/PDF.
+     */
+    public function citasReporteDia(Request $request)
+    {
+        $request->validate([
+            'fecha' => 'required|date',
+        ]);
+
+        $fecha = $request->input('fecha');
+
+        $citas = DB::table('citas')
+            ->join('mascotas', 'citas.id_mascota', '=', 'mascotas.id_mascota')
+            ->join('usuarios', 'mascotas.id_usuario', '=', 'usuarios.id_usuario')
+            ->select(
+                'citas.*',
+                'mascotas.nombre as mascota_nombre',
+                'mascotas.especie',
+                'mascotas.raza',
+                'usuarios.nombre as dueno_nombre',
+                'usuarios.email as dueno_email',
+                'usuarios.telefono as dueno_telefono'
+            )
+            ->where('citas.fecha', $fecha)
+            ->orderBy('citas.hora', 'asc')
+            ->get();
+
+        return view('admin.reporte-dia-citas', compact('citas', 'fecha'));
     }
 
     /* =========================================================================
@@ -417,6 +465,27 @@ class AdminController extends Controller
             'raza' => 'nullable|string|max:50',
             'peso' => 'nullable|numeric|min:0|max:999.99',
         ]);
+
+        // Check for duplicate pet (same owner, name, species, raza and peso)
+        $duplicateQuery = DB::table('mascotas')
+            ->where('id_usuario', $request->id_usuario)
+            ->where('nombre', trim($request->nombre))
+            ->where('especie', trim($request->especie));
+        if (!empty($request->raza)) {
+            $duplicateQuery->where('raza', trim($request->raza));
+        } else {
+            $duplicateQuery->whereNull('raza');
+        }
+        if (!empty($request->peso)) {
+            $duplicateQuery->where('peso', $request->peso);
+        } else {
+            $duplicateQuery->whereNull('peso');
+        }
+        if ($duplicateQuery->exists()) {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Esta mascota ya está registrada.');
+        }
 
         DB::table('mascotas')->insert([
             'id_usuario' => $request->id_usuario,
@@ -455,6 +524,35 @@ class AdminController extends Controller
         DB::table('mascotas')->where('id_mascota', $id)->delete();
 
         return redirect()->route('admin.mascotas.index')->with('success', 'Mascota eliminada.');
+    }
+
+    /**
+     * Historial clínico de una mascota: lista todas sus citas con detalles.
+     */
+    public function mascotasHistorial($id)
+    {
+        $mascota = DB::table('mascotas')
+            ->join('usuarios', 'mascotas.id_usuario', '=', 'usuarios.id_usuario')
+            ->select(
+                'mascotas.*',
+                'usuarios.nombre as dueno_nombre',
+                'usuarios.email as dueno_email',
+                'usuarios.telefono as dueno_telefono'
+            )
+            ->where('mascotas.id_mascota', $id)
+            ->first();
+
+        if (! $mascota) {
+            return redirect()->route('admin.mascotas.index')->with('error', 'Mascota no encontrada.');
+        }
+
+        $citas = DB::table('citas')
+            ->where('id_mascota', $id)
+            ->orderBy('fecha', 'desc')
+            ->orderBy('hora', 'desc')
+            ->get();
+
+        return view('admin.historial-mascota', compact('mascota', 'citas'));
     }
 
     /* =========================================================================
@@ -558,6 +656,98 @@ class AdminController extends Controller
             ->get();
 
         return view('admin.productos', compact('productos', 'categorias'));
+    }
+
+    /**
+     * Reporte formal descargable en PDF de Productos organizados por categoría.
+     */
+    public function productosPdf(Request $request)
+    {
+        $categoriaId = $request->query('categoria_id');
+
+        $catQuery = DB::table('categorias');
+        if ($categoriaId && $categoriaId !== 'todas') {
+            $catQuery->where('id_categoria', $categoriaId);
+        }
+        $categorias = $catQuery->orderBy('nombre', 'asc')->get();
+
+        $totalProductos = 0;
+        $totalStock = 0;
+        $valorTotalInventario = 0;
+
+        foreach ($categorias as $cat) {
+            $prods = DB::table('productos')
+                ->where('id_categoria', $cat->id_categoria)
+                ->orderBy('nombre', 'asc')
+                ->get();
+
+            $cat->productos = $prods;
+            $cat->total_prods = $prods->count();
+            $cat->total_stock = $prods->sum('stock');
+            $cat->subtotal_valor = $prods->sum(function ($p) {
+                return (float) $p->precio * (int) $p->stock;
+            });
+
+            $totalProductos += $cat->total_prods;
+            $totalStock += $cat->total_stock;
+            $valorTotalInventario += $cat->subtotal_valor;
+        }
+
+        // Productos sin categoría si se seleccionan todas
+        $productosSinCategoria = collect();
+        if (! $categoriaId || $categoriaId === 'todas') {
+            $productosSinCategoria = DB::table('productos')
+                ->whereNull('id_categoria')
+                ->orderBy('nombre', 'asc')
+                ->get();
+
+            $totalProductos += $productosSinCategoria->count();
+            $totalStock += $productosSinCategoria->sum('stock');
+            $valorTotalInventario += $productosSinCategoria->sum(function ($p) {
+                return (float) $p->precio * (int) $p->stock;
+            });
+        }
+
+        $categoriaSeleccionada = ($categoriaId && $categoriaId !== 'todas')
+            ? $categorias->first()
+            : null;
+
+        $todasCategorias = DB::table('categorias')->orderBy('nombre', 'asc')->get();
+
+        return view('admin.reporte-productos-pdf', compact(
+            'categorias',
+            'productosSinCategoria',
+            'totalProductos',
+            'totalStock',
+            'valorTotalInventario',
+            'categoriaSeleccionada',
+            'todasCategorias',
+            'categoriaId'
+        ));
+    }
+
+    /**
+     * Reporte formal descargable en PDF de Categorías de Productos.
+     */
+    public function categoriasPdf()
+    {
+        $categorias = DB::table('categorias')
+            ->select('categorias.*')
+            ->selectRaw('(SELECT COUNT(*) FROM productos WHERE productos.id_categoria = categorias.id_categoria) as total_productos')
+            ->selectRaw('(SELECT COALESCE(SUM(stock), 0) FROM productos WHERE productos.id_categoria = categorias.id_categoria) as total_stock')
+            ->orderBy('nombre', 'asc')
+            ->get();
+
+        $totalCategorias = $categorias->count();
+        $totalProductos = DB::table('productos')->count();
+        $totalStock = DB::table('productos')->sum('stock');
+
+        return view('admin.reporte-categorias-pdf', compact(
+            'categorias',
+            'totalCategorias',
+            'totalProductos',
+            'totalStock'
+        ));
     }
 
     public function categoriasStore(Request $request)

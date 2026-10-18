@@ -340,21 +340,32 @@ class LandingController extends Controller
         // Obtener citas existentes en la base de datos para esta semana
         $citasDb = collect();
         if (Schema::hasTable('citas') && Schema::hasTable('mascotas') && Schema::hasTable('usuarios')) {
+            $selectCols = [
+                'citas.id_cita',
+                'citas.fecha',
+                'citas.hora',
+                'citas.motivo',
+                'citas.estado',
+                'mascotas.nombre as mascota_nombre',
+                'mascotas.especie as mascota_especie',
+                'usuarios.nombre as dueno_nombre',
+            ];
+            if (Schema::hasColumn('citas', 'servicio')) {
+                $selectCols[] = 'citas.servicio';
+            }
+            if (Schema::hasColumn('citas', 'precio')) {
+                $selectCols[] = 'citas.precio';
+            }
+            if (Schema::hasColumn('citas', 'profesional')) {
+                $selectCols[] = 'citas.profesional';
+            }
+
             $citasDb = DB::table('citas')
                 ->join('mascotas', 'citas.id_mascota', '=', 'mascotas.id_mascota')
                 ->join('usuarios', 'mascotas.id_usuario', '=', 'usuarios.id_usuario')
                 ->whereBetween('citas.fecha', [$inicioSemana->toDateString(), $finSemana->toDateString()])
                 ->where('citas.estado', '!=', 'Cancelada')
-                ->select(
-                    'citas.id_cita',
-                    'citas.fecha',
-                    'citas.hora',
-                    'citas.motivo',
-                    'citas.estado',
-                    'mascotas.nombre as mascota_nombre',
-                    'mascotas.especie as mascota_especie',
-                    'usuarios.nombre as dueno_nombre'
-                )
+                ->select($selectCols)
                 ->orderBy('citas.fecha')
                 ->orderBy('citas.hora')
                 ->get();
@@ -655,6 +666,7 @@ class LandingController extends Controller
             'telefono' => $inputTelefono,
             'servicio' => $request->servicio,
             'precio' => $precio,
+            'motivo' => $motivoCompleto,
             'profesional' => $profesional ?? 'Profesional asignado por clínica',
             'fecha' => Carbon::parse($request->fecha)->format('d/m/Y'),
             'hora' => substr($request->hora, 0, 5),

@@ -43,6 +43,7 @@ class LandingFeaturesTest extends TestCase
                 hora TIME NOT NULL,
                 telefono_contacto VARCHAR(20),
                 servicio VARCHAR(150),
+                precio DECIMAL(10,2),
                 profesional VARCHAR(150),
                 motivo VARCHAR(255) NOT NULL,
                 estado VARCHAR(20) DEFAULT "Pendiente",

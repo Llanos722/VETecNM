@@ -26,6 +26,26 @@ class CitasRequerimientosTest extends TestCase
         ');
 
         DB::statement('
+            CREATE TABLE IF NOT EXISTS categorias (
+                id_categoria INTEGER PRIMARY KEY AUTOINCREMENT,
+                nombre VARCHAR(100) NOT NULL,
+                descripcion TEXT
+            )
+        ');
+
+        DB::statement('
+            CREATE TABLE IF NOT EXISTS productos (
+                id_producto INTEGER PRIMARY KEY AUTOINCREMENT,
+                id_categoria INTEGER,
+                nombre VARCHAR(150) NOT NULL,
+                descripcion TEXT,
+                precio DECIMAL(10,2) NOT NULL,
+                stock INTEGER DEFAULT 0,
+                imagen_url VARCHAR(255)
+            )
+        ');
+
+        DB::statement('
             CREATE TABLE IF NOT EXISTS mascotas (
                 id_mascota INTEGER PRIMARY KEY AUTOINCREMENT,
                 id_usuario INTEGER NOT NULL,
@@ -439,5 +459,82 @@ class CitasRequerimientosTest extends TestCase
             ]);
         $respBloqueo->assertRedirect(route('admin.horarios.index'));
         $this->assertDatabaseHas('bloqueos_personal', ['profesional' => 'Dra. Sofía Valenzuela Méndez', 'motivo' => 'Congreso Internacional de Cirugía']);
+    }
+
+    /**
+     * Prueba: Permite agendar a la misma hora si es con especialistas distintos.
+     */
+    public function test_permite_citas_a_la_misma_hora_si_son_con_doctores_distintos(): void
+    {
+        $userId = DB::table('usuarios')->insertGetId([
+            'nombre' => 'Cliente Multicita',
+            'email' => 'multi@example.com',
+            'password' => bcrypt('password'),
+            'rol' => 'cliente',
+        ]);
+        $m1 = DB::table('mascotas')->insertGetId(['id_usuario' => $userId, 'nombre' => 'Pelusa', 'especie' => 'Gato']);
+        $m2 = DB::table('mascotas')->insertGetId(['id_usuario' => $userId, 'nombre' => 'Toby', 'especie' => 'Perro']);
+
+        $fecha = Carbon::now()->addDays(2)->toDateString();
+        $hora = '12:00';
+
+        // 1. Cita con la Dra. Sofía Valenzuela
+        $resp1 = $this->withSession(['user_id' => $userId, 'user_rol' => 'cliente'])
+            ->post('/citas/agendar-cliente', [
+                'id_mascota' => $m1,
+                'servicio' => 'Consulta Médica General y Pediátrica',
+                'profesional' => 'Dra. Sofía Valenzuela Méndez',
+                'fecha' => $fecha,
+                'hora' => $hora,
+                'motivo' => 'Revisión dental',
+            ]);
+        $resp1->assertRedirect(route('dashboard'));
+
+        // 2. Cita a la misma hora con el Dr. Alejandro Gómez (distinto doctor)
+        $resp2 = $this->withSession(['user_id' => $userId, 'user_rol' => 'cliente'])
+            ->post('/citas/agendar-cliente', [
+                'id_mascota' => $m2,
+                'servicio' => 'Consulta Médica General y Pediátrica',
+                'profesional' => 'Dr. Alejandro Gómez Morales',
+                'fecha' => $fecha,
+                'hora' => $hora,
+                'motivo' => 'Chequeo de rutina',
+            ]);
+        $resp2->assertRedirect(route('dashboard'));
+
+        $this->assertEquals(2, DB::table('citas')->where('fecha', $fecha)->where('hora', '12:00:00')->count());
+    }
+
+    /**
+     * Prueba: Las vistas y registros de citas contienen precio y motivo claramente definidos.
+     */
+    public function test_dashboard_muestra_precio_y_motivo(): void
+    {
+        $userId = DB::table('usuarios')->insertGetId([
+            'nombre' => 'Cliente Vista Test',
+            'email' => 'vistatest@example.com',
+            'password' => bcrypt('password'),
+            'rol' => 'cliente',
+        ]);
+        $m = DB::table('mascotas')->insertGetId(['id_usuario' => $userId, 'nombre' => 'Balu', 'especie' => 'Perro']);
+
+        $fecha = Carbon::now()->addDays(3)->toDateString();
+
+        $this->withSession(['user_id' => $userId, 'user_rol' => 'cliente'])
+            ->post('/citas/agendar-cliente', [
+                'id_mascota' => $m,
+                'servicio' => 'Consulta Médica General y Pediátrica',
+                'profesional' => 'Dra. Sofía Valenzuela Méndez',
+                'fecha' => $fecha,
+                'hora' => '15:00',
+                'motivo' => 'Dolor estomacal y falta de apetito',
+            ]);
+
+        $response = $this->withSession(['user_id' => $userId, 'user_rol' => 'cliente'])
+            ->get(route('dashboard'));
+
+        $response->assertStatus(200);
+        $response->assertSee('Dolor estomacal y falta de apetito');
+        $response->assertSee('350.00');
     }
 }

@@ -163,12 +163,14 @@ return new class extends Migration
         }
 
         // Actualizar citas existentes con el precio correspondiente a su servicio si no lo tienen
-        $serviciosMap = DB::table('servicios')->pluck('precio', 'nombre');
-        foreach ($serviciosMap as $nombreSrv => $precioSrv) {
-            DB::table('citas')
-                ->where('servicio', $nombreSrv)
-                ->whereNull('precio')
-                ->update(['precio' => $precioSrv]);
+        if (Schema::hasTable('citas') && Schema::hasColumn('citas', 'servicio') && Schema::hasColumn('citas', 'precio')) {
+            $serviciosMap = DB::table('servicios')->pluck('precio', 'nombre');
+            foreach ($serviciosMap as $nombreSrv => $precioSrv) {
+                DB::table('citas')
+                    ->where('servicio', $nombreSrv)
+                    ->whereNull('precio')
+                    ->update(['precio' => $precioSrv]);
+            }
         }
     }
 

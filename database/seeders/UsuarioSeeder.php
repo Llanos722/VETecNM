@@ -15,23 +15,13 @@ class UsuarioSeeder extends Seeder
     public function run(): void
     {
         // 1. Seed usuarios (Tabla del proyecto VETecNM)
+        // Perfil único de Administrador general del sistema
         DB::table('usuarios')->updateOrInsert(
             ['email' => 'admin@vetecnm.com'],
             [
-                'nombre' => 'Administrador Vet',
+                'nombre' => 'Administrador General',
                 'telefono' => '3411234567',
                 'password' => Hash::make('admin123'),
-                'rol' => 'admin',
-                'fecha_registro' => now(),
-            ]
-        );
-
-        DB::table('usuarios')->updateOrInsert(
-            ['email' => 'edgm02061@gmail.com'],
-            [
-                'nombre' => 'Admin EDGM',
-                'telefono' => '3419876543',
-                'password' => Hash::make('123456789'),
                 'rol' => 'admin',
                 'fecha_registro' => now(),
             ]
@@ -52,16 +42,8 @@ class UsuarioSeeder extends Seeder
         User::updateOrCreate(
             ['email' => 'admin@vetecnm.com'],
             [
-                'name' => 'Administrador Vet',
+                'name' => 'Administrador General',
                 'password' => Hash::make('admin123'),
-            ]
-        );
-
-        User::updateOrCreate(
-            ['email' => 'edgm02061@gmail.com'],
-            [
-                'name' => 'Admin EDGM',
-                'password' => Hash::make('123456789'),
             ]
         );
 
