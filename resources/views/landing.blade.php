@@ -1545,10 +1545,439 @@
             .form-grid-2 {
                 grid-template-columns: 1fr;
             }
+        }
 
-            .footer-grid {
-                grid-template-columns: 1fr;
-            }
+        /* =====================================================================
+           CATÁLOGO & TABLA ESTÉTICA DE PRODUCTOS EN LANDING PAGE
+           ===================================================================== */
+        #productos {
+            background: #ffffff;
+            border-top: 1px solid var(--slate-200);
+            border-bottom: 1px solid var(--slate-200);
+            padding: 5rem 1.5rem;
+        }
+
+        .catalog-table-wrapper {
+            max-width: 1280px;
+            margin: 0 auto;
+        }
+
+        /* Barra de herramientas de la tabla */
+        .catalog-table-toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-bottom: 1.25rem;
+            background: #f8fafc;
+            padding: 1rem 1.25rem;
+            border-radius: 14px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .catalog-toolbar-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+            min-width: 280px;
+            flex-wrap: wrap;
+        }
+
+        .catalog-search-box {
+            position: relative;
+            flex: 1;
+            min-width: 240px;
+            max-width: 440px;
+        }
+
+        .catalog-search-box input {
+            width: 100%;
+            padding: 0.65rem 2.2rem 0.65rem 2.5rem;
+            border-radius: 10px;
+            border: 1.5px solid #cbd5e1;
+            background: #ffffff;
+            font-size: 0.88rem;
+            color: #1e293b;
+            outline: none;
+            transition: all 0.2s ease;
+            box-sizing: border-box;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+        }
+
+        .catalog-search-box input:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+        }
+
+        .catalog-search-box .search-icon {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+            font-size: 0.9rem;
+            pointer-events: none;
+        }
+
+        .catalog-search-box .clear-btn {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #94a3b8;
+            font-size: 0.85rem;
+            cursor: pointer;
+            padding: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        .catalog-search-box .clear-btn:hover {
+            color: #1e293b;
+        }
+
+        .catalog-category-select {
+            padding: 0.65rem 1rem;
+            border-radius: 10px;
+            border: 1.5px solid #cbd5e1;
+            background: #ffffff;
+            font-size: 0.88rem;
+            font-weight: 500;
+            color: #334155;
+            outline: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .catalog-category-select:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+        }
+
+        .catalog-toolbar-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .catalog-items-counter {
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: #64748b;
+        }
+
+        .btn-cart-toolbar {
+            background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+            color: #ffffff;
+            border: none;
+            padding: 0.65rem 1.25rem;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 14px rgba(37, 99, 235, 0.28);
+            transition: all 0.2s ease;
+            text-decoration: none;
+        }
+
+        .btn-cart-toolbar:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 18px rgba(37, 99, 235, 0.38);
+        }
+
+        .cart-pill-badge {
+            background: #ef4444;
+            color: #ffffff;
+            font-size: 0.75rem;
+            font-weight: 800;
+            padding: 2px 7px;
+            border-radius: 9999px;
+            min-width: 18px;
+            text-align: center;
+        }
+
+        .cart-total-badge {
+            background: rgba(255, 255, 255, 0.22);
+            color: #ffffff;
+            font-size: 0.8rem;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 6px;
+        }
+
+        /* Estructura estética de la tabla */
+        .landing-table-container {
+            background: #ffffff;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 20px rgba(15, 23, 42, 0.05);
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .landing-catalog-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.92rem;
+        }
+
+        .landing-catalog-table thead th {
+            background: #f8fafc;
+            color: #475569;
+            font-weight: 700;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            padding: 1.1rem 1.25rem;
+            border-bottom: 2px solid #e2e8f0;
+            white-space: nowrap;
+        }
+
+        .landing-catalog-table tbody tr {
+            border-bottom: 1px solid #f1f5f9;
+            transition: background 0.15s ease;
+        }
+
+        .landing-catalog-table tbody tr:hover {
+            background: #f8fafc;
+        }
+
+        .landing-catalog-table td {
+            padding: 1.1rem 1.25rem;
+            vertical-align: middle;
+        }
+
+        .product-cell-flex {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .product-mini-thumb {
+            width: 52px;
+            height: 52px;
+            min-width: 52px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #e2e8f0;
+            overflow: hidden;
+            font-size: 1.35rem;
+            background: #f8fafc;
+        }
+
+        .product-mini-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .product-cell-name {
+            font-weight: 700;
+            color: #0f172a;
+            font-size: 0.96rem;
+            margin-bottom: 3px;
+            cursor: pointer;
+            transition: color 0.15s;
+        }
+
+        .product-cell-name:hover {
+            color: #2563eb;
+            text-decoration: underline;
+        }
+
+        .product-cell-desc {
+            color: #64748b;
+            font-size: 0.82rem;
+            line-height: 1.35;
+            max-width: 360px;
+            display: -webkit-box;
+            -webkit-line-clamp: 1;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .product-cat-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 8px;
+            white-space: nowrap;
+        }
+
+        .product-cat-tag.theme-general { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+        .product-cat-tag.theme-alimentos { background: #fffbeb; color: #b45309; border: 1px solid #fde68a; }
+        .product-cat-tag.theme-accesorios { background: #f0f9ff; color: #0369a1; border: 1px solid #bae6fd; }
+        .product-cat-tag.theme-higiene { background: #f0fdfa; color: #0f766e; border: 1px solid #99f6e4; }
+        .product-cat-tag.theme-farmacia { background: #f5f3ff; color: #6d28d9; border: 1px solid #ddd6fe; }
+
+        .product-price-cell strong {
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: #059669;
+        }
+
+        .product-price-cell small {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #10b981;
+            margin-left: 2px;
+        }
+
+        .stock-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 9999px;
+            white-space: nowrap;
+        }
+
+        .stock-pill.in-stock { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+        .stock-pill.low-stock { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
+        .stock-pill.out-stock { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+
+        .product-table-actions {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 8px;
+        }
+
+        .btn-action-info {
+            background: #ffffff;
+            border: 1.5px solid #cbd5e1;
+            color: #334155;
+            padding: 0.5rem 0.9rem;
+            border-radius: 8px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            white-space: nowrap;
+        }
+
+        .btn-action-info:hover {
+            border-color: #2563eb;
+            color: #2563eb;
+            background: #eff6ff;
+        }
+
+        .btn-action-add {
+            background: #2563eb;
+            border: 1.5px solid #2563eb;
+            color: #ffffff;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 2px 6px rgba(37, 99, 235, 0.2);
+            white-space: nowrap;
+        }
+
+        .btn-action-add:hover {
+            background: #1d4ed8;
+            border-color: #1d4ed8;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3);
+        }
+
+        .btn-action-wa {
+            background: #10b981;
+            border: 1.5px solid #10b981;
+            color: #ffffff !important;
+            padding: 0.5rem 0.8rem;
+            border-radius: 8px;
+            font-size: 0.88rem;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s;
+        }
+
+        .btn-action-wa:hover {
+            background: #059669;
+            border-color: #059669;
+            transform: translateY(-1px);
+        }
+
+        /* Botón Flotante del Carrito (FAB) */
+        .floating-cart-fab {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            z-index: 999;
+            background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+            color: #ffffff;
+            border: none;
+            border-radius: 50px;
+            padding: 12px 20px;
+            display: none;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 10px 25px rgba(37, 99, 235, 0.4);
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 0.92rem;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .floating-cart-fab:hover {
+            transform: translateY(-3px) scale(1.03);
+            box-shadow: 0 14px 30px rgba(37, 99, 235, 0.5);
+        }
+
+        /* Toast Notificación */
+        .toast-catalog-feedback {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: #0f172a;
+            color: #ffffff;
+            padding: 12px 22px;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            z-index: 10000;
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            pointer-events: none;
+        }
+
+        .toast-catalog-feedback.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
         }
     </style>
 </head>
@@ -1586,6 +2015,7 @@
                 <li><a href="#inicio">Inicio</a></li>
                 <li><a href="#clinica-info">Clínica & Horarios</a></li>
                 <li><a href="#servicios">Servicios</a></li>
+                <li><a href="#productos">Productos</a></li>
                 <li><a href="#equipo-medico">Equipo Médico</a></li>
                 <li><a href="#calendario">Calendario</a></li>
             </ul>
@@ -1630,6 +2060,7 @@
             <a href="#clinica-info" onclick="toggleMobileMenu()"><i class="fa-solid fa-hospital"></i> Clínica &
                 Horarios</a>
             <a href="#servicios" onclick="toggleMobileMenu()"><i class="fa-solid fa-stethoscope"></i> Servicios</a>
+            <a href="#productos" onclick="toggleMobileMenu()"><i class="fa-solid fa-boxes-packing"></i> Catálogo de Productos</a>
             <a href="#equipo-medico" onclick="toggleMobileMenu()"><i class="fa-solid fa-user-doctor"></i> Equipo
                 Médico</a>
             <a href="#calendario" onclick="toggleMobileMenu()"><i class="fa-solid fa-calendar-week"></i> Calendario</a>
@@ -1941,6 +2372,185 @@
     </section>
 
     <!-- =====================================================================
+         CATÁLOGO DE PRODUCTOS & FARMACIA VETERINARIA
+         ===================================================================== -->
+    <section class="section-wrapper" id="productos">
+        <div class="catalog-table-wrapper">
+            <div class="section-header" style="margin-bottom: 2rem;">
+                <span class="section-tag" style="background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe;">
+                    <i class="fa-solid fa-boxes-packing"></i> Catálogo Oficial VETecNM
+                </span>
+                <h2 class="section-title">Productos, Alimentos y Cuidados Veterinarios</h2>
+                <p class="section-subtitle">
+                    Alimentos de prescripción médica, suplementos nutricionales, productos de higiene dermatológica y accesorios certificados. Consulta su información o agrégalos a tu carrito de consulta médica.
+                </p>
+            </div>
+
+            <!-- Barra de Controles y Filtros de la Tabla -->
+            <div class="catalog-table-toolbar">
+                <div class="catalog-toolbar-left">
+                    <div class="catalog-search-box">
+                        <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                        <input type="text" id="inputBusquedaProductosLanding" placeholder="Buscar por producto, marca o indicación..." oninput="filtrarTablaProductosLanding()">
+                        <button type="button" id="btn_clear_catalog_search" class="clear-btn" onclick="clearCatalogSearchLanding()" style="display: none;" title="Limpiar búsqueda">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+
+                    <select id="selectCategoriaProductosLanding" class="catalog-category-select" onchange="cambiarFiltroCategoriaSelect(this.value)">
+                        <option value="todas">Todas las categorías ({{ $productosLanding->count() }})</option>
+                        @foreach ($categoriasProductos as $cat)
+                            <option value="{{ $cat->id_categoria }}">{{ $cat->nombre }} ({{ $cat->total_productos }})</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div class="catalog-toolbar-right">
+                    <span id="landing_prods_count" class="catalog-items-counter">
+                        {{ $productosLanding->count() }} producto(s)
+                    </span>
+
+                    <button type="button" class="btn-cart-toolbar" onclick="openCartModalLanding()" title="Ver carrito de consulta y cotización">
+                        <i class="fa-solid fa-cart-shopping"></i>
+                        <span>Carrito de Consulta</span>
+                        <span id="cartCountBadge" class="cart-pill-badge">0</span>
+                        <span id="cartTotalSummary" class="cart-total-badge">$0.00 MXN</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tabla Estética de Productos -->
+            <div class="landing-table-container">
+                <table class="landing-catalog-table" id="tablaProductosLanding">
+                    <thead>
+                        <tr>
+                            <th style="min-width: 290px;">Producto & Descripción</th>
+                            <th style="min-width: 140px;">Categoría</th>
+                            <th style="min-width: 130px;">Precio</th>
+                            <th style="min-width: 150px;">Disponibilidad</th>
+                            <th style="min-width: 200px; text-align: right;">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse ($productosLanding as $prod)
+                            @php
+                                $catLower = strtolower($prod->categoria_nombre ?? '');
+                                $prodIcon = 'fa-box-open';
+                                $iconColor = '#2563eb';
+                                $themeClass = 'theme-general';
+                                $gradientBg = 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)';
+                                if (str_contains($catLower, 'alimento') || str_contains($catLower, 'comida')) {
+                                    $prodIcon = 'fa-bowl-food';
+                                    $iconColor = '#d97706';
+                                    $themeClass = 'theme-alimentos';
+                                    $gradientBg = 'linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)';
+                                } elseif (str_contains($catLower, 'accesorio') || str_contains($catLower, 'correa') || str_contains($catLower, 'collar')) {
+                                    $prodIcon = 'fa-vest-patches';
+                                    $iconColor = '#0284c7';
+                                    $themeClass = 'theme-accesorios';
+                                    $gradientBg = 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)';
+                                } elseif (str_contains($catLower, 'higiene') || str_contains($catLower, 'baño') || str_contains($catLower, 'champu')) {
+                                    $prodIcon = 'fa-soap';
+                                    $iconColor = '#0d9488';
+                                    $themeClass = 'theme-higiene';
+                                    $gradientBg = 'linear-gradient(135deg, #f0fdfa 0%, #ccfbf1 100%)';
+                                } elseif (str_contains($catLower, 'medicamento') || str_contains($catLower, 'farmacia')) {
+                                    $prodIcon = 'fa-pills';
+                                    $iconColor = '#7c3aed';
+                                    $themeClass = 'theme-farmacia';
+                                    $gradientBg = 'linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%)';
+                                }
+                            @endphp
+                            <tr class="row-product-item"
+                                data-categoria="{{ $prod->id_categoria ?? 'general' }}"
+                                data-nombre="{{ strtolower($prod->nombre) }}"
+                                data-desc="{{ strtolower($prod->descripcion ?? '') }}">
+                                <td>
+                                    <div class="product-cell-flex">
+                                        <div class="product-mini-thumb" style="background: {{ $gradientBg }};">
+                                            @if (!empty($prod->imagen_url))
+                                                <img src="{{ $prod->imagen_url }}" alt="{{ $prod->nombre }}">
+                                            @else
+                                                <i class="fa-solid {{ $prodIcon }}" style="color: {{ $iconColor }};"></i>
+                                            @endif
+                                        </div>
+                                        <div>
+                                            <div class="product-cell-name" onclick='openProductDetailLanding(@json($prod))' title="Ver información del producto">
+                                                {{ $prod->nombre }}
+                                            </div>
+                                            <div class="product-cell-desc">
+                                                {{ Str::limit($prod->descripcion ?? 'Producto de calidad profesional veterinaria certificado por VETecNM.', 85) }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="product-cat-tag {{ $themeClass }}">
+                                        <i class="fa-solid {{ $prodIcon }}"></i> {{ $prod->categoria_nombre ?? 'General' }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="product-price-cell">
+                                        <strong>${{ number_format($prod->precio, 2) }}</strong>
+                                        <small>MXN</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    @if ($prod->stock > 5)
+                                        <span class="stock-pill in-stock" title="{{ $prod->stock }} unidades disponibles">
+                                            <i class="fa-solid fa-circle-check"></i> Disponible ({{ $prod->stock }})
+                                        </span>
+                                    @elseif ($prod->stock > 0)
+                                        <span class="stock-pill low-stock" title="Solo quedan {{ $prod->stock }} unidades">
+                                            <i class="fa-solid fa-triangle-exclamation"></i> Pocas piezas ({{ $prod->stock }})
+                                        </span>
+                                    @else
+                                        <span class="stock-pill out-stock">
+                                            <i class="fa-solid fa-circle-xmark"></i> Agotado
+                                        </span>
+                                    @endif
+                                </td>
+                                <td style="text-align: right; white-space: nowrap;">
+                                    <div class="product-table-actions">
+                                        <button type="button" class="btn-action-info" onclick='openProductDetailLanding(@json($prod))' title="Ver información detallada">
+                                            <i class="fa-regular fa-eye"></i> Info
+                                        </button>
+                                        <button type="button" class="btn-action-add" onclick='agregarAlCarritoLanding(@json($prod))' title="Agregar a mi consulta">
+                                            <i class="fa-solid fa-cart-plus"></i> Agregar
+                                        </button>
+                                        <a href="https://wa.me/{{ preg_replace('/\D/', '', $clinicaInfo['whatsapp']) }}?text={{ urlencode('Hola VETecNM, me gustaría consultar la disponibilidad del producto: ' . $prod->nombre . ' (Código #' . $prod->id_producto . ')') }}"
+                                            target="_blank" class="btn-action-wa" title="Consultar por WhatsApp">
+                                            <i class="fa-brands fa-whatsapp"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="5" style="text-align: center; padding: 3rem 1rem; color: #94a3b8;">
+                                    <i class="fa-solid fa-boxes-packing" style="font-size: 2.2rem; color: #cbd5e1; margin-bottom: 0.6rem; display: block;"></i>
+                                    <h4 style="color: #64748b; font-weight: 700; margin: 0 0 4px 0;">Catálogo en Actualización</h4>
+                                    <p style="margin: 0; font-size: 0.88rem;">Pronto tendremos nuevos productos disponibles en nuestra farmacia y tienda.</p>
+                                </td>
+                            </tr>
+                        @endforelse
+                        <tr id="landing_prods_no_results_row" style="display: none;">
+                            <td colspan="5" style="text-align: center; padding: 3rem 1.5rem; color: #94a3b8;">
+                                <i class="fa-solid fa-magnifying-glass" style="font-size: 2rem; color: #cbd5e1; margin-bottom: 0.8rem; display: block;"></i>
+                                <h4 style="color: #0f172a; font-weight: 700; margin: 0 0 6px 0; font-size: 1.05rem;">No se encontraron productos coincidentes</h4>
+                                <p style="margin: 0 0 1rem 0; font-size: 0.88rem; color: #64748b;">Prueba con otra palabra clave o selecciona otra categoría.</p>
+                                <button type="button" class="btn-action-info" onclick="resetProductSearchLanding()">
+                                    <i class="fa-solid fa-arrow-rotate-left"></i> Restablecer Filtros
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- =====================================================================
          RF-04: PRESENTACIÓN DE PERSONAL MÉDICO Y TÉCNICO
          ===================================================================== -->
     <section class="section-wrapper" id="equipo-medico">
@@ -2114,6 +2724,7 @@
                     <li><a href="#inicio">Inicio</a></li>
                     <li><a href="#clinica-info">Información de la Clínica (RF-02)</a></li>
                     <li><a href="#servicios">Servicios por Categoría (RF-03)</a></li>
+                    <li><a href="#productos">Catálogo de Productos & Farmacia</a></li>
                     <li><a href="#equipo-medico">Personal Médico (RF-04)</a></li>
                     <li><a href="#calendario">Calendario de Citas (RF-05)</a></li>
                 </ul>
@@ -2279,7 +2890,7 @@
                     <div class="input-group-modern">
                         <label for="servicio"><i class="fa-solid fa-stethoscope"></i> Servicio Deseado *</label>
                         <select id="servicio" name="servicio" required
-                            onchange="sincronizarCategoriaDesdeServicio(); actualizarPrecioLanding(); cargarHorariosLanding();">
+                            onchange="sincronizarCategoriaDesdeServicio(); actualizarPrecioLanding(); filtrarProfesionalesLanding(); cargarHorariosLanding();">
                             <option value="">-- Seleccionar Servicio --</option>
                             @foreach ($categoriasServicios as $cat)
                                 <optgroup label="{{ $cat['nombre'] }}" data-categoria-group="{{ $cat['nombre'] }}">
@@ -2328,11 +2939,23 @@
                         <select id="profesional" name="profesional" onchange="cargarHorariosLanding()">
                             <option value="">-- Cualquier Profesional Disponible --</option>
                             @foreach ($profesionalesList as $p)
-                                <option value="{{ $p['nombre'] }}">{{ $p['nombre'] }} ({{ $p['especialidad'] }})
+                                <option value="{{ $p['nombre'] }}" data-tipo="{{ $p['tipo'] ?? 'salud' }}">{{ $p['nombre'] }} ({{ $p['especialidad'] }})
                                 </option>
                             @endforeach
                         </select>
-                        <small style="color: #64748b; font-size: 0.74rem;">Filtra la disponibilidad según el especialista seleccionado.</small>
+                        <!-- Indicador de médico fijado cuando se agenda con un especialista específico -->
+                        <div id="doctor_lock_indicator" style="display: none; align-items: center; justify-content: space-between; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 0.5rem 0.75rem; margin-top: 0.45rem;">
+                            <div style="display: flex; align-items: center; gap: 7px; font-size: 0.78rem; color: #1e40af; font-weight: 600;">
+                                <i class="fa-solid fa-lock" style="color: #2563eb;"></i>
+                                <span>Especialista fijado: <strong id="locked_doctor_name"></strong></span>
+                            </div>
+                            <button type="button" onclick="unlockDoctorSchedule()" style="background: #dbeafe; border: 1px solid #bfdbfe; color: #1d4ed8; font-size: 0.73rem; font-weight: 600; cursor: pointer; border-radius: 4px; padding: 2px 7px; display: inline-flex; align-items: center; gap: 4px;" title="Permitir seleccionar otro profesional">
+                                <i class="fa-solid fa-unlock"></i> Cambiar
+                            </button>
+                        </div>
+                        <small id="profesional_hint_landing" style="color: #64748b; font-size: 0.74rem; display: block; margin-top: 3px;">
+                            Filtra la disponibilidad según el especialista seleccionado.
+                        </small>
                     </div>
                 </div>
 
@@ -2450,6 +3073,7 @@
         </div>
     </div>
 
+
     <!-- =====================================================================
          MODAL 3: TÉRMINOS, CONDICIONES & PROTOCOLOS DE ACCESO (RF-02)
          ===================================================================== -->
@@ -2546,10 +3170,135 @@
             }
         }
 
+        const landingProfesionalesList = @json($profesionalesList);
+        const landingMapaServiciosProfesionales = @json($mapaServiciosProfesionales ?? []);
+        let lockedDoctorLanding = null;
+
+        function filtrarProfesionalesLanding() {
+            const servicioSelect = document.getElementById('servicio');
+            const profSelect = document.getElementById('profesional');
+            const hint = document.getElementById('profesional_hint_landing');
+            if (!servicioSelect || !profSelect) return;
+
+            // Si el médico está bloqueado/fijado, no sobreescribir la selección
+            if (lockedDoctorLanding) {
+                profSelect.value = lockedDoctorLanding;
+                if (hint) {
+                    hint.innerHTML = `<span style="color: #2563eb; font-weight: 600;"><i class="fa-solid fa-lock"></i> Especialista fijado: ${lockedDoctorLanding}.</span>`;
+                }
+                return;
+            }
+
+            const selectedServicio = servicioSelect.value.trim();
+            const prevSelectedProf = profSelect.value;
+
+            let aptos = [];
+            if (!selectedServicio) {
+                aptos = landingProfesionalesList;
+            } else if (landingMapaServiciosProfesionales && landingMapaServiciosProfesionales[selectedServicio]) {
+                const nombresAptos = landingMapaServiciosProfesionales[selectedServicio];
+                aptos = landingProfesionalesList.filter(p => nombresAptos.includes(p.nombre));
+            } else {
+                const srvLower = selectedServicio.toLowerCase();
+                const optSelected = servicioSelect.options[servicioSelect.selectedIndex];
+                const catGroup = optSelected ? (optSelected.getAttribute('data-categoria') || '') : '';
+
+                if (catGroup.toLowerCase().includes('estética') || srvLower.includes('baño') || srvLower.includes('corte') || srvLower.includes('estilismo') || srvLower.includes('profilaxis')) {
+                    aptos = landingProfesionalesList.filter(p => p.tipo === 'estetica');
+                } else if (srvLower.includes('cirug') || srvLower.includes('esteril') || srvLower.includes('castra') || srvLower.includes('trauma')) {
+                    aptos = landingProfesionalesList.filter(p => p.id === 'dra-valenzuela' || p.tipo === 'salud');
+                } else if (srvLower.includes('rayos') || srvLower.includes('imagen') || srvLower.includes('ultrasonido')) {
+                    aptos = landingProfesionalesList.filter(p => p.id === 'dr-gomez' || p.tipo === 'salud');
+                } else {
+                    aptos = landingProfesionalesList.filter(p => p.tipo === 'salud');
+                }
+            }
+
+            if (aptos.length === 0) {
+                aptos = landingProfesionalesList;
+            }
+
+            profSelect.innerHTML = '<option value="">-- Cualquier Profesional Disponible --</option>';
+            let preserve = false;
+            aptos.forEach(p => {
+                const opt = document.createElement('option');
+                opt.value = p.nombre;
+                opt.textContent = `${p.nombre} (${p.especialidad})`;
+                if (p.nombre === prevSelectedProf) {
+                    opt.selected = true;
+                    preserve = true;
+                }
+                profSelect.appendChild(opt);
+            });
+
+            if (!preserve && prevSelectedProf) {
+                profSelect.value = '';
+            }
+
+            if (hint) {
+                if (selectedServicio) {
+                    hint.innerHTML = `<span style="color: #059669; font-weight: 600;"><i class="fa-solid fa-user-check"></i> ${aptos.length} especialista(s) calificado(s) para este servicio.</span>`;
+                } else {
+                    hint.innerHTML = 'Filtra la disponibilidad según el especialista seleccionado.';
+                }
+            }
+        }
+
+        function filtrarServiciosPorCategoria() {
+            const catFiltro = document.getElementById('categoria_filtro').value;
+            const servicioSelect = document.getElementById('servicio');
+            if (!servicioSelect) return;
+
+            const optgroups = servicioSelect.querySelectorAll('optgroup');
+            optgroups.forEach(group => {
+                const groupCat = group.getAttribute('data-categoria-group') || '';
+                if (catFiltro === 'todas' || groupCat === catFiltro) {
+                    group.style.display = '';
+                } else {
+                    group.style.display = 'none';
+                }
+            });
+
+            const currentSelected = servicioSelect.options[servicioSelect.selectedIndex];
+            if (currentSelected && currentSelected.value) {
+                const currentCat = currentSelected.getAttribute('data-categoria') || '';
+                if (catFiltro !== 'todas' && currentCat !== catFiltro) {
+                    servicioSelect.value = '';
+                }
+            }
+
+            actualizarPrecioLanding();
+            filtrarProfesionalesLanding();
+            cargarHorariosLanding();
+        }
+
+        function sincronizarCategoriaDesdeServicio() {
+            const servicioSelect = document.getElementById('servicio');
+            const catFiltro = document.getElementById('categoria_filtro');
+            if (!servicioSelect || !catFiltro) return;
+
+            const selectedOpt = servicioSelect.options[servicioSelect.selectedIndex];
+            if (selectedOpt && selectedOpt.value) {
+                const cat = selectedOpt.getAttribute('data-categoria');
+                if (cat) {
+                    for (let i = 0; i < catFiltro.options.length; i++) {
+                        if (catFiltro.options[i].value === cat) {
+                            catFiltro.selectedIndex = i;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
         // Modal de Agendamiento (RF-05, R-30, R-31, R-32)
-        function openScheduleModal() {
+        function openScheduleModal(fromDoctor = false) {
+            if (!fromDoctor && !lockedDoctorLanding) {
+                unlockDoctorSchedule();
+            }
             document.getElementById('modalSchedule').classList.add('active');
             actualizarPrecioLanding();
+            filtrarProfesionalesLanding();
             cargarHorariosLanding();
         }
 
@@ -2617,6 +3366,7 @@
         }
 
         function prefillAndOpenSchedule(serviceName) {
+            unlockDoctorSchedule();
             const select = document.getElementById('servicio');
             if (select) {
                 let found = false;
@@ -2643,22 +3393,153 @@
         }
 
         function prefillDoctorSchedule(doctorName) {
+            // Resolver nombre canónico del doctor
+            const docObj = landingProfesionalesList.find(p => p.nombre === doctorName || (p.nombre && p.nombre.includes(doctorName)));
+            const resolvedName = docObj ? docObj.nombre : doctorName;
+
+            lockedDoctorLanding = resolvedName;
+
             const docSelect = document.getElementById('profesional');
             if (docSelect) {
+                let found = false;
                 for (let i = 0; i < docSelect.options.length; i++) {
-                    if (docSelect.options[i].value === doctorName || docSelect.options[i].text.includes(doctorName)) {
+                    if (docSelect.options[i].value === resolvedName || docSelect.options[i].text.includes(resolvedName)) {
                         docSelect.selectedIndex = i;
+                        found = true;
                         break;
                     }
                 }
+                if (!found) {
+                    const opt = document.createElement('option');
+                    opt.value = resolvedName;
+                    opt.textContent = `${resolvedName} (${docObj?.especialidad ?? 'Especialista'})`;
+                    opt.selected = true;
+                    docSelect.appendChild(opt);
+                }
+                docSelect.value = resolvedName;
+                // Bloquear visual y funcionalmente el selector para que no se pueda cambiar
+                docSelect.style.pointerEvents = 'none';
+                docSelect.style.backgroundColor = '#f1f5f9';
+                docSelect.style.borderColor = '#93c5fd';
+                docSelect.style.color = '#1e3a8a';
+                docSelect.style.fontWeight = '600';
+                docSelect.style.cursor = 'not-allowed';
+                docSelect.setAttribute('tabindex', '-1');
             }
+
+            // Mostrar el banner visual de fijación con botón de desbloqueo explícito
+            const lockIndicator = document.getElementById('doctor_lock_indicator');
+            const lockedNameEl = document.getElementById('locked_doctor_name');
+            if (lockIndicator && lockedNameEl) {
+                lockedNameEl.textContent = resolvedName;
+                lockIndicator.style.display = 'flex';
+            }
+
+            const hint = document.getElementById('profesional_hint_landing');
+            if (hint) {
+                hint.innerHTML = `<span style="color: #2563eb; font-weight: 600;"><i class="fa-solid fa-lock"></i> Especialista fijado: ${resolvedName}.</span>`;
+            }
+
+            // Filtrar servicios para mostrar los que este doctor atiende
+            filtrarServiciosPorDoctor(resolvedName);
 
             const motivoInput = document.getElementById('motivo');
             if (motivoInput) {
-                motivoInput.value = 'Solicito consulta con: ' + doctorName + '. ';
+                motivoInput.value = 'Solicito consulta con: ' + resolvedName + '. ';
             }
-            openScheduleModal();
+
+            openScheduleModal(true);
         }
+
+        function unlockDoctorSchedule() {
+            lockedDoctorLanding = null;
+            const docSelect = document.getElementById('profesional');
+            if (docSelect) {
+                docSelect.style.pointerEvents = '';
+                docSelect.style.backgroundColor = '';
+                docSelect.style.borderColor = '';
+                docSelect.style.color = '';
+                docSelect.style.fontWeight = '';
+                docSelect.style.cursor = '';
+                docSelect.removeAttribute('tabindex');
+            }
+
+            const lockIndicator = document.getElementById('doctor_lock_indicator');
+            if (lockIndicator) {
+                lockIndicator.style.display = 'none';
+            }
+
+            restaurarServiciosLanding();
+            filtrarProfesionalesLanding();
+            cargarHorariosLanding();
+        }
+
+        function filtrarServiciosPorDoctor(doctorName) {
+            const servicioSelect = document.getElementById('servicio');
+            if (!servicioSelect) return;
+
+            const docObj = landingProfesionalesList.find(p => p.nombre === doctorName || (p.nombre && p.nombre.includes(doctorName)));
+            const serviciosPermitidos = docObj?.servicios || [];
+
+            let primerServicioValido = null;
+            let currentValido = false;
+
+            const options = servicioSelect.querySelectorAll('option');
+            options.forEach(opt => {
+                if (!opt.value) return;
+                const nombreServicio = opt.value;
+                const enMapa = landingMapaServiciosProfesionales[nombreServicio] && landingMapaServiciosProfesionales[nombreServicio].includes(doctorName);
+                const enLista = serviciosPermitidos.some(s => s.toLowerCase() === nombreServicio.toLowerCase() || nombreServicio.toLowerCase().includes(s.toLowerCase()));
+
+                if (enMapa || enLista || serviciosPermitidos.length === 0) {
+                    opt.style.display = '';
+                    opt.disabled = false;
+                    if (!primerServicioValido) primerServicioValido = opt.value;
+                    if (servicioSelect.value === opt.value) currentValido = true;
+                } else {
+                    opt.style.display = 'none';
+                    opt.disabled = true;
+                }
+            });
+
+            servicioSelect.querySelectorAll('optgroup').forEach(grp => {
+                const visibleOpts = Array.from(grp.querySelectorAll('option')).filter(o => o.style.display !== 'none');
+                grp.style.display = visibleOpts.length > 0 ? '' : 'none';
+            });
+
+            if (!currentValido && primerServicioValido) {
+                servicioSelect.value = primerServicioValido;
+                sincronizarCategoriaDesdeServicio();
+                actualizarPrecioLanding();
+            }
+        }
+
+        function restaurarServiciosLanding() {
+            const servicioSelect = document.getElementById('servicio');
+            if (!servicioSelect) return;
+
+            servicioSelect.querySelectorAll('option').forEach(opt => {
+                opt.style.display = '';
+                opt.disabled = false;
+            });
+            servicioSelect.querySelectorAll('optgroup').forEach(grp => {
+                grp.style.display = '';
+            });
+            filtrarServiciosPorCategoria();
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const profSelect = document.getElementById('profesional');
+            if (profSelect) {
+                profSelect.addEventListener('change', function(e) {
+                    if (lockedDoctorLanding && profSelect.value !== lockedDoctorLanding) {
+                        profSelect.value = lockedDoctorLanding;
+                        e.preventDefault();
+                        e.stopPropagation();
+                    }
+                });
+            }
+        });
 
         // Modal de Información del Servicio (RF-03)
         function openServiceDetailModal(srv, categoryName) {
@@ -2682,6 +3563,317 @@
         function closeServiceDetailModal() {
             document.getElementById('modalServiceDetail').classList.remove('active');
         }
+
+        // =====================================================================
+        // CATÁLOGO DE PRODUCTOS: TABLA, FILTROS Y CARRITO DE CONSULTA
+        // =====================================================================
+        let currentProductCatLanding = 'todas';
+        let carritoLanding = JSON.parse(localStorage.getItem('vetecnm_cart') || '[]');
+        let productoSeleccionadoModal = null;
+
+        function guardarCarritoLanding() {
+            localStorage.setItem('vetecnm_cart', JSON.stringify(carritoLanding));
+            actualizarBadgesCarritoLanding();
+        }
+
+        function actualizarBadgesCarritoLanding() {
+            const totalItems = carritoLanding.reduce((acc, item) => acc + (item.cantidad || 1), 0);
+            const totalMxn = carritoLanding.reduce((acc, item) => acc + ((item.precio || 0) * (item.cantidad || 1)), 0);
+
+            const badgeCount = document.getElementById('cartCountBadge');
+            if (badgeCount) badgeCount.textContent = totalItems;
+
+            const summaryTotal = document.getElementById('cartTotalSummary');
+            if (summaryTotal) summaryTotal.textContent = '$' + totalMxn.toFixed(2) + ' MXN';
+
+            const fab = document.getElementById('floatingCartFab');
+            const fabCount = document.getElementById('floatingCartCount');
+            if (fabCount) fabCount.textContent = totalItems;
+            if (fab) fab.style.display = totalItems > 0 ? 'flex' : 'none';
+        }
+
+        function agregarAlCarritoLanding(prod) {
+            const existe = carritoLanding.find(item => item.id_producto == prod.id_producto);
+            if (existe) {
+                existe.cantidad = (existe.cantidad || 1) + 1;
+            } else {
+                carritoLanding.push({
+                    id_producto: prod.id_producto,
+                    nombre: prod.nombre,
+                    categoria_nombre: prod.categoria_nombre || 'General',
+                    precio: parseFloat(prod.precio) || 0,
+                    stock: prod.stock,
+                    cantidad: 1
+                });
+            }
+            guardarCarritoLanding();
+            mostrarToastCatalog(`"${prod.nombre}" agregado al carrito de consulta.`);
+        }
+
+        function mostrarToastCatalog(msg) {
+            const toast = document.getElementById('toastCatalogFeedback');
+            const msgEl = document.getElementById('toastCatalogMessage');
+            if (toast && msgEl) {
+                msgEl.textContent = msg;
+                toast.classList.add('show');
+                setTimeout(() => toast.classList.remove('show'), 2600);
+            }
+        }
+
+        function openCartModalLanding() {
+            renderizarContenidoCarritoLanding();
+            const modal = document.getElementById('modalCartLanding');
+            if (modal) {
+                modal.classList.add('active');
+                modal.style.display = 'flex';
+            }
+        }
+
+        function closeCartModalLanding() {
+            const modal = document.getElementById('modalCartLanding');
+            if (modal) {
+                modal.classList.remove('active');
+                modal.style.display = 'none';
+            }
+        }
+
+        function renderizarContenidoCarritoLanding() {
+            const container = document.getElementById('cartItemsContainerLanding');
+            const footer = document.getElementById('cartSummaryFooterLanding');
+            const totalEl = document.getElementById('cartModalTotalAmount');
+            const btnWa = document.getElementById('btnCartSendWhatsApp');
+            if (!container) return;
+
+            if (carritoLanding.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 2.8rem 1rem; color: #94a3b8;">
+                        <i class="fa-solid fa-cart-arrow-down" style="font-size: 2.8rem; color: #cbd5e1; margin-bottom: 0.8rem; display: block;"></i>
+                        <h4 style="color: #64748b; font-weight: 700; margin: 0 0 6px 0;">Tu carrito de consulta está vacío</h4>
+                        <p style="font-size: 0.88rem; margin: 0;">Selecciona productos en la tabla para cotizarlos o integrarlos a tu cita médica.</p>
+                    </div>
+                `;
+                if (footer) footer.style.display = 'none';
+                return;
+            }
+
+            if (footer) footer.style.display = 'block';
+
+            let total = 0;
+            let html = '<div style="display: flex; flex-direction: column; gap: 10px;">';
+
+            carritoLanding.forEach((item, idx) => {
+                const subtotal = item.precio * item.cantidad;
+                total += subtotal;
+
+                html += `
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; gap: 10px;">
+                        <div style="flex: 1; min-width: 140px;">
+                            <strong style="color: #0f172a; font-size: 0.92rem; display: block;">${item.nombre}</strong>
+                            <span style="font-size: 0.75rem; color: #64748b;">${item.categoria_nombre} • $${item.precio.toFixed(2)} c/u</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 6px;">
+                            <button type="button" onclick="cambiarCantidadCarrito(${idx}, -1)" style="width: 26px; height: 26px; border: 1px solid #cbd5e1; background: white; border-radius: 6px; cursor: pointer; font-weight: bold; line-height: 1;">-</button>
+                            <span style="font-weight: 700; font-size: 0.88rem; min-width: 20px; text-align: center;">${item.cantidad}</span>
+                            <button type="button" onclick="cambiarCantidadCarrito(${idx}, 1)" style="width: 26px; height: 26px; border: 1px solid #cbd5e1; background: white; border-radius: 6px; cursor: pointer; font-weight: bold; line-height: 1;">+</button>
+                        </div>
+                        <div style="text-align: right; min-width: 80px;">
+                            <strong style="color: #059669; font-size: 0.92rem;">$${subtotal.toFixed(2)}</strong>
+                        </div>
+                        <div>
+                            <button type="button" onclick="eliminarDelCarrito(${idx})" style="background: none; border: none; color: #ef4444; cursor: pointer; padding: 4px;" title="Eliminar"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+
+            container.innerHTML = html;
+            if (totalEl) totalEl.textContent = '$' + total.toFixed(2) + ' MXN';
+
+            if (btnWa) {
+                const rawPhone = @json(preg_replace('/\D/', '', $clinicaInfo['whatsapp']));
+                let msg = 'Hola VETecNM! Me interesa consultar la disponibilidad y cotización de estos productos de su catálogo:\n\n';
+                carritoLanding.forEach(it => {
+                    msg += `• ${it.cantidad}x ${it.nombre} ($${(it.precio * it.cantidad).toFixed(2)} MXN)\n`;
+                });
+                msg += `\nTotal Estimado: $${total.toFixed(2)} MXN\n¿Puedo apartarlos o recogerlos en mostrador?`;
+                btnWa.href = `https://wa.me/${rawPhone}?text=${encodeURIComponent(msg)}`;
+            }
+        }
+
+        function cambiarCantidadCarrito(idx, delta) {
+            if (!carritoLanding[idx]) return;
+            carritoLanding[idx].cantidad = (carritoLanding[idx].cantidad || 1) + delta;
+            if (carritoLanding[idx].cantidad <= 0) {
+                carritoLanding.splice(idx, 1);
+            }
+            guardarCarritoLanding();
+            renderizarContenidoCarritoLanding();
+        }
+
+        function eliminarDelCarrito(idx) {
+            carritoLanding.splice(idx, 1);
+            guardarCarritoLanding();
+            renderizarContenidoCarritoLanding();
+        }
+
+        function vaciarCarritoLanding() {
+            if (confirm('¿Deseas vaciar todos los productos del carrito de consulta?')) {
+                carritoLanding = [];
+                guardarCarritoLanding();
+                renderizarContenidoCarritoLanding();
+            }
+        }
+
+        function incluirCarritoEnCitaMedica() {
+            if (carritoLanding.length === 0) return;
+
+            let resumenProds = 'Deseo adquirir/consultar en mi cita: ';
+            resumenProds += carritoLanding.map(it => `${it.cantidad}x ${it.nombre}`).join(', ');
+
+            closeCartModalLanding();
+
+            const motivoField = document.getElementById('motivo');
+            if (motivoField) {
+                if (motivoField.value && !motivoField.value.includes('Deseo adquirir')) {
+                    motivoField.value += ' | ' + resumenProds;
+                } else if (!motivoField.value) {
+                    motivoField.value = resumenProds;
+                }
+            }
+
+            const seccionCita = document.getElementById('agendar-cita') || document.getElementById('calendario');
+            if (seccionCita) {
+                seccionCita.scrollIntoView({ behavior: 'smooth' });
+            }
+
+            mostrarToastCatalog('Productos integrados en tu solicitud de cita médica.');
+        }
+
+        function cambiarFiltroCategoriaSelect(catId) {
+            currentProductCatLanding = String(catId);
+            filtrarTablaProductosLanding();
+        }
+
+        function clearCatalogSearchLanding() {
+            const input = document.getElementById('inputBusquedaProductosLanding');
+            if (input) {
+                input.value = '';
+                input.focus();
+            }
+            const clearBtn = document.getElementById('btn_clear_catalog_search');
+            if (clearBtn) clearBtn.style.display = 'none';
+            filtrarTablaProductosLanding();
+        }
+
+        function resetProductSearchLanding() {
+            const input = document.getElementById('inputBusquedaProductosLanding');
+            if (input) input.value = '';
+            const clearBtn = document.getElementById('btn_clear_catalog_search');
+            if (clearBtn) clearBtn.style.display = 'none';
+
+            const sel = document.getElementById('selectCategoriaProductosLanding');
+            if (sel) sel.value = 'todas';
+            currentProductCatLanding = 'todas';
+
+            filtrarTablaProductosLanding();
+        }
+
+        function filtrarTablaProductosLanding() {
+            const input = document.getElementById('inputBusquedaProductosLanding');
+            const query = (input?.value || '').toLowerCase().trim();
+            const clearBtn = document.getElementById('btn_clear_catalog_search');
+            if (clearBtn) {
+                clearBtn.style.display = query.length > 0 ? 'flex' : 'none';
+            }
+
+            const sel = document.getElementById('selectCategoriaProductosLanding');
+            if (sel && sel.value !== currentProductCatLanding) {
+                currentProductCatLanding = sel.value;
+            }
+
+            const rows = document.querySelectorAll('#tablaProductosLanding tbody .row-product-item');
+            const counter = document.getElementById('landing_prods_count');
+            const noResultsRow = document.getElementById('landing_prods_no_results_row');
+
+            let visibleCount = 0;
+
+            rows.forEach(row => {
+                const cat = String(row.getAttribute('data-categoria') || '');
+                const name = (row.getAttribute('data-nombre') || '').toLowerCase();
+                const desc = (row.getAttribute('data-desc') || '').toLowerCase();
+
+                const matchCat = (currentProductCatLanding === 'todas' || cat === currentProductCatLanding);
+                const matchQuery = (!query || name.includes(query) || desc.includes(query));
+
+                if (matchCat && matchQuery) {
+                    row.style.display = '';
+                    visibleCount++;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+
+            if (counter) {
+                counter.textContent = `${visibleCount} producto(s)`;
+            }
+
+            if (noResultsRow) {
+                noResultsRow.style.display = visibleCount === 0 ? '' : 'none';
+            }
+        }
+
+        function openProductDetailLanding(prod) {
+            productoSeleccionadoModal = prod;
+            const modal = document.getElementById('modalProductDetailLanding');
+            if (!modal) return;
+
+            document.getElementById('modalProdTitle').innerText = prod.nombre;
+            const catEl = document.getElementById('modalProdCategory');
+            if (catEl) catEl.innerText = prod.categoria_nombre || 'General';
+            document.getElementById('modalProdPrice').innerText = '$' + parseFloat(prod.precio).toFixed(2) + ' MXN';
+            document.getElementById('modalProdDescription').innerText = prod.descripcion || 'Producto certificado de grado veterinario para el cuidado de mascotas en clínica VETecNM.';
+
+            const stockEl = document.getElementById('modalProdStock');
+            if (stockEl) {
+                if (prod.stock > 5) {
+                    stockEl.innerHTML = `<span class="stock-pill in-stock"><i class="fa-solid fa-circle-check"></i> Disponible (${prod.stock} u.)</span>`;
+                } else if (prod.stock > 0) {
+                    stockEl.innerHTML = `<span class="stock-pill low-stock"><i class="fa-solid fa-triangle-exclamation"></i> Últimas ${prod.stock} pzas</span>`;
+                } else {
+                    stockEl.innerHTML = `<span class="stock-pill out-stock"><i class="fa-solid fa-circle-xmark"></i> Agotado</span>`;
+                }
+            }
+
+            const waBtn = document.getElementById('btnWhatsappProductModal');
+            if (waBtn) {
+                const rawPhone = @json(preg_replace('/\D/', '', $clinicaInfo['whatsapp']));
+                const text = encodeURIComponent(`Hola VETecNM, me gustaría consultar la disponibilidad del producto: ${prod.nombre} (Código #${prod.id_producto})`);
+                waBtn.href = `https://wa.me/${rawPhone}?text=${text}`;
+            }
+
+            modal.classList.add('active');
+            modal.style.display = 'flex';
+        }
+
+        function agregarProductoActualDesdeModal() {
+            if (productoSeleccionadoModal) {
+                agregarAlCarritoLanding(productoSeleccionadoModal);
+                closeProductDetailLanding();
+            }
+        }
+
+        function closeProductDetailLanding() {
+            const modal = document.getElementById('modalProductDetailLanding');
+            if (modal) {
+                modal.classList.remove('active');
+                modal.style.display = 'none';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            actualizarBadgesCarritoLanding();
+        });
 
         // Modal de Términos y Condiciones
         function openTermsModal() {
@@ -2769,6 +3961,121 @@
                 </button>
             </div>
         </div>
+    </div>
+
+    <!-- =====================================================================
+         MODAL: CARRITO DE CONSULTA & COMPRA DE PRODUCTOS
+         ===================================================================== -->
+    <div id="modalCartLanding" class="modal-overlay" style="display: none;">
+        <div class="modal-box-lg" style="max-width: 640px; margin: auto;">
+            <div class="modal-box-header">
+                <div>
+                    <h3 style="color: #0f172a; font-size: 1.35rem; font-weight: 800; display: flex; align-items: center; gap: 10px;">
+                        <i class="fa-solid fa-cart-shopping" style="color: #2563eb;"></i> Carrito de Consulta de Productos
+                    </h3>
+                    <p style="margin: 4px 0 0; font-size: 0.85rem; color: #64748b;">
+                        Revisa los productos seleccionados para consultar existencias o integrarlos a tu cita médica.
+                    </p>
+                </div>
+                <button type="button" class="modal-close-btn" onclick="closeCartModalLanding()">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div id="cartItemsContainerLanding" style="max-height: 380px; overflow-y: auto; padding-right: 4px;">
+                <!-- Rellenado por JS -->
+            </div>
+
+            <div id="cartSummaryFooterLanding" style="margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1.5px solid #e2e8f0;">
+                <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 1.25rem;">
+                    <span style="font-size: 0.95rem; font-weight: 600; color: #475569;">Total Estimado de Productos:</span>
+                    <span id="cartModalTotalAmount" style="font-size: 1.4rem; font-weight: 800; color: #059669;">$0.00 MXN</span>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <a id="btnCartSendWhatsApp" href="#" target="_blank"
+                       style="background: #10b981; color: white; padding: 0.85rem 1.25rem; border-radius: 10px; font-weight: 700; font-size: 0.95rem; text-decoration: none; text-align: center; display: flex; align-items: center; justify-content: center; gap: 9px; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);">
+                        <i class="fa-brands fa-whatsapp" style="font-size: 1.2rem;"></i> Enviar Lista y Consultar por WhatsApp
+                    </a>
+
+                    <button type="button" onclick="incluirCarritoEnCitaMedica()"
+                            style="background: #2563eb; color: white; border: none; padding: 0.85rem 1.25rem; border-radius: 10px; font-weight: 700; font-size: 0.95rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 9px; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);">
+                        <i class="fa-solid fa-calendar-plus" style="font-size: 1.05rem;"></i> Incluir Productos en mi Cita Médica
+                    </button>
+
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 5px;">
+                        <button type="button" onclick="vaciarCarritoLanding()" style="background: none; border: none; color: #ef4444; font-size: 0.82rem; cursor: pointer; font-weight: 600;">
+                            <i class="fa-solid fa-trash"></i> Vaciar Carrito
+                        </button>
+                        <button type="button" onclick="closeCartModalLanding()" style="background: none; border: none; color: #64748b; font-size: 0.82rem; cursor: pointer;">
+                            Seguir explorando
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- =====================================================================
+         MODAL: INFORMACIÓN Y FICHA DEL PRODUCTO
+         ===================================================================== -->
+    <div id="modalProductDetailLanding" class="modal-overlay" style="display: none;">
+        <div class="modal-box-lg" style="max-width: 540px; margin: auto;">
+            <div class="modal-box-header">
+                <div>
+                    <span id="modalProdCategory" class="product-cat-tag theme-general" style="margin-bottom: 6px; display: inline-block;">General</span>
+                    <h3 id="modalProdTitle" style="color: #0f172a; font-size: 1.35rem; font-weight: 800; margin: 0;">Nombre Producto</h3>
+                </div>
+                <button type="button" class="modal-close-btn" onclick="closeProductDetailLanding()">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div style="margin-bottom: 1.25rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; background: #f8fafc; padding: 0.75rem 1rem; border-radius: 10px; border: 1px solid #e2e8f0;">
+                    <div>
+                        <span style="font-size: 0.75rem; color: #64748b; text-transform: uppercase; font-weight: 700; display: block;">Precio Oficial</span>
+                        <strong id="modalProdPrice" style="font-size: 1.3rem; color: #059669; font-weight: 800;">$0.00 MXN</strong>
+                    </div>
+                    <div id="modalProdStock">
+                        <!-- Stock pill -->
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 1.25rem;">
+                    <h5 style="font-size: 0.82rem; text-transform: uppercase; color: #475569; font-weight: 700; margin: 0 0 6px 0;">Descripción e Indicaciones:</h5>
+                    <p id="modalProdDescription" style="font-size: 0.92rem; color: #334155; line-height: 1.6; margin: 0; background: #ffffff; padding: 0.75rem 0;"></p>
+                </div>
+
+                <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 10px; padding: 0.75rem 1rem; font-size: 0.84rem; color: #1e40af; display: flex; align-items: center; gap: 8px;">
+                    <i class="fa-solid fa-shield-halved" style="color: #2563eb; font-size: 1.1rem;"></i>
+                    <span>Producto original y certificado para venta en mostrador de la clínica VETecNM.</span>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-top: 1.5rem; flex-wrap: wrap;">
+                <button type="button" id="btnAddToCartFromModal" onclick="agregarProductoActualDesdeModal()"
+                        style="flex: 1; min-width: 170px; background: #2563eb; color: white; border: none; padding: 0.75rem 1.2rem; border-radius: 9px; font-weight: 700; font-size: 0.92rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);">
+                    <i class="fa-solid fa-cart-plus"></i> Agregar al Carrito
+                </button>
+                <a id="btnWhatsappProductModal" href="#" target="_blank"
+                   style="flex: 1; min-width: 170px; background: #10b981; color: white; padding: 0.75rem 1.2rem; border-radius: 9px; font-weight: 700; font-size: 0.92rem; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);">
+                    <i class="fa-brands fa-whatsapp"></i> Consultar WhatsApp
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Botón Flotante de Carrito de Consulta -->
+    <button type="button" id="floatingCartFab" class="floating-cart-fab" onclick="openCartModalLanding()" title="Ver Carrito de Consulta">
+        <i class="fa-solid fa-cart-shopping"></i>
+        <span>Consulta (<span id="floatingCartCount">0</span>)</span>
+    </button>
+
+    <!-- Toast de Notificación -->
+    <div id="toastCatalogFeedback" class="toast-catalog-feedback">
+        <i class="fa-solid fa-circle-check" style="color: #10b981; font-size: 1.1rem;"></i>
+        <span id="toastCatalogMessage">¡Producto agregado al carrito!</span>
     </div>
 </body>
 

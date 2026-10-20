@@ -14,6 +14,7 @@ Route::post('/citas/agendar', [LandingController::class, 'agendarCita'])->name('
 Route::get('/api/citas-semana', [LandingController::class, 'citasSemana'])->name('citas.semana');
 Route::get('/api/citas/disponibilidad', [LandingController::class, 'consultarDisponibilidad'])->name('citas.disponibilidad');
 Route::get('/api/servicios', [LandingController::class, 'serviciosApi'])->name('servicios.api');
+Route::get('/api/profesionales', [LandingController::class, 'profesionalesApi'])->name('profesionales.api');
 
 // =========================================================================
 // AUTENTICACIÓN Y ACCESO (Clientes, Recepción y Administradores)
@@ -34,6 +35,7 @@ Route::get('/dashboard', [AuthController::class, 'dashboard'])->name('dashboard'
 Route::post('/dashboard/mascota', [AuthController::class, 'registerPet'])->name('mascota.store');
 Route::post('/citas/agendar-cliente', [AuthController::class, 'agendarCitaCliente'])->name('citas.agendar.cliente');
 Route::get('/citas/{id}/comprobante', [AuthController::class, 'descargarComprobante'])->name('citas.comprobante');
+Route::match(['put', 'post'], '/dashboard/perfil/password', [AuthController::class, 'updatePassword'])->name('perfil.password.update');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 // =========================================================================
@@ -73,6 +75,8 @@ Route::middleware(['admin'])->prefix('admin')->name('admin.')->group(function ()
     Route::post('/mascotas', [AdminController::class, 'mascotasStore'])->name('mascotas.store');
     Route::put('/mascotas/{id}', [AdminController::class, 'mascotasUpdate'])->name('mascotas.update');
     Route::delete('/mascotas/{id}', [AdminController::class, 'mascotasDestroy'])->name('mascotas.destroy');
+    Route::post('/mascotas/{id}/asignar-dueno', [AdminController::class, 'asignarDueno'])->name('mascotas.asignar-dueno');
+    Route::post('/mascotas/{id}/quitar-dueno', [AdminController::class, 'quitarDueno'])->name('mascotas.quitar-dueno');
     Route::get('/mascotas/{id}/historial', [AdminController::class, 'mascotasHistorial'])->name('mascotas.historial');
 
     // Usuarios

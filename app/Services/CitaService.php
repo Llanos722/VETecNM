@@ -12,7 +12,7 @@ class CitaService
     /**
      * Lista oficial de profesionales de salud y estética de VETecNM.
      *
-     * @return array<int, array<string, string>>
+     * @return array<int, array<string, mixed>>
      */
     public static function getProfesionales(): array
     {
@@ -23,6 +23,27 @@ class CitaService
                 'puesto' => 'Médico Veterinario Zootecnista (M.V.Z.)',
                 'especialidad' => 'Cirugía Veterinaria & Traumatología',
                 'tipo' => 'salud',
+                'categorias' => [
+                    'Cirugía y Hospitalización',
+                    'Consultas y Diagnóstico',
+                    'Medicina Preventiva',
+                    'Urgencias Médicas',
+                    'Urgencias',
+                ],
+                'servicios' => [
+                    'Cirugía de Tejidos Blandos y Traumatología',
+                    'Esterilización y Castración Segura',
+                    'Hospitalización y Cuidados Intensivos (UCI)',
+                    'Consulta Médica General y Pediátrica',
+                    'Consulta Médica General',
+                    'Consulta Médica',
+                    'Revisión General de Rutina',
+                    'Urgencia Médica Inmediata',
+                    'Laboratorio Clínico y Análisis Sanguíneo',
+                    'Esquema de Vacunación Canina y Felina',
+                    'Desparasitación Interna y Externa',
+                    'Implantación de Microchip y Certificados',
+                ],
             ],
             [
                 'id' => 'dr-gomez',
@@ -30,6 +51,27 @@ class CitaService
                 'puesto' => 'Médico Veterinario Zootecnista (M.V.Z.)',
                 'especialidad' => 'Medicina Interna & Diagnóstico por Imagen',
                 'tipo' => 'salud',
+                'categorias' => [
+                    'Consultas y Diagnóstico',
+                    'Cirugía y Hospitalización',
+                    'Medicina Preventiva',
+                    'Urgencias Médicas',
+                    'Urgencias',
+                ],
+                'servicios' => [
+                    'Imagenología (Rayos X y Ultrasonido Digital)',
+                    'Imagenología',
+                    'Laboratorio Clínico y Análisis Sanguíneo',
+                    'Consulta Médica General y Pediátrica',
+                    'Consulta Médica General',
+                    'Consulta Médica',
+                    'Revisión General de Rutina',
+                    'Hospitalización y Cuidados Intensivos (UCI)',
+                    'Esquema de Vacunación Canina y Felina',
+                    'Desparasitación Interna y Externa',
+                    'Implantación de Microchip y Certificados',
+                    'Urgencia Médica Inmediata',
+                ],
             ],
             [
                 'id' => 'dra-rivas',
@@ -37,6 +79,25 @@ class CitaService
                 'puesto' => 'Médico Veterinario Zootecnista (M.V.Z.)',
                 'especialidad' => 'Medicina Preventiva & Dermatología',
                 'tipo' => 'salud',
+                'categorias' => [
+                    'Medicina Preventiva',
+                    'Consultas y Diagnóstico',
+                    'Urgencias Médicas',
+                    'Urgencias',
+                ],
+                'servicios' => [
+                    'Esquema de Vacunación Canina y Felina',
+                    'Desparasitación Interna y Externa',
+                    'Implantación de Microchip y Certificados',
+                    'Vacunación y Desparasitación',
+                    'Vacunación',
+                    'Consulta Médica General y Pediátrica',
+                    'Consulta Médica General',
+                    'Consulta Médica',
+                    'Revisión General de Rutina',
+                    'Laboratorio Clínico y Análisis Sanguíneo',
+                    'Urgencia Médica Inmediata',
+                ],
             ],
             [
                 'id' => 'tec-silva',
@@ -44,8 +105,142 @@ class CitaService
                 'puesto' => 'Técnico Veterinario Certificado (T.V.C.)',
                 'especialidad' => 'Estilismo Canino Profesional & Manejo Fear Free',
                 'tipo' => 'estetica',
+                'categorias' => [
+                    'Estética Mascotas',
+                    'Estética',
+                ],
+                'servicios' => [
+                    'Baño Médico / Antipulgas y Spa Canino',
+                    'Corte de Raza y Estilismo Profesional',
+                    'Profilaxis y Limpieza Dental Ultrasónica',
+                ],
             ],
         ];
+    }
+
+    /**
+     * Retorna los profesionales aptos para un servicio determinado o categoría.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    public static function getProfesionalesPorServicio(?string $nombreServicio): array
+    {
+        $todos = self::getProfesionales();
+
+        if (empty($nombreServicio)) {
+            return $todos;
+        }
+
+        $srvNorm = strtolower(trim($nombreServicio));
+
+        // 1. Filtrar por coincidencia en la lista específica de servicios del profesional
+        $filtrados = array_filter($todos, function ($p) use ($srvNorm) {
+            if (! empty($p['servicios'])) {
+                foreach ($p['servicios'] as $s) {
+                    if (strtolower(trim($s)) === $srvNorm || str_contains($srvNorm, strtolower(trim($s))) || str_contains(strtolower(trim($s)), $srvNorm)) {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        });
+
+        if (! empty($filtrados)) {
+            return array_values($filtrados);
+        }
+
+        // 2. Si no hubo coincidencia directa por nombre, buscar la categoría del servicio
+        $categoria = null;
+        if (Schema::hasTable('servicios')) {
+            $registro = DB::table('servicios')
+                ->where(function ($q) use ($srvNorm) {
+                    $q->whereRaw('LOWER(TRIM(nombre)) = ?', [$srvNorm])
+                        ->orWhereRaw('? LIKE CONCAT("%", LOWER(TRIM(nombre)), "%")', [$srvNorm]);
+                })
+                ->first();
+            if ($registro && ! empty($registro->categoria)) {
+                $categoria = trim($registro->categoria);
+            }
+        }
+
+        // Deducir categoría por palabras clave si no está en la BD
+        if (! $categoria) {
+            if (str_contains($srvNorm, 'estétic') || str_contains($srvNorm, 'baño') || str_contains($srvNorm, 'corte') || str_contains($srvNorm, 'profilaxis') || str_contains($srvNorm, 'spa')) {
+                $categoria = 'Estética Mascotas';
+            } elseif (str_contains($srvNorm, 'cirug') || str_contains($srvNorm, 'esteril') || str_contains($srvNorm, 'castra') || str_contains($srvNorm, 'hospital')) {
+                $categoria = 'Cirugía y Hospitalización';
+            } elseif (str_contains($srvNorm, 'vacun') || str_contains($srvNorm, 'desparasit') || str_contains($srvNorm, 'microchip') || str_contains($srvNorm, 'preventiv')) {
+                $categoria = 'Medicina Preventiva';
+            } else {
+                $categoria = 'Consultas y Diagnóstico';
+            }
+        }
+
+        $filtradosCat = array_filter($todos, function ($p) use ($categoria) {
+            if (! empty($p['categorias'])) {
+                foreach ($p['categorias'] as $cat) {
+                    if (strcasecmp($cat, $categoria) === 0) {
+                        return true;
+                    }
+                }
+            }
+            if ($categoria === 'Estética Mascotas') {
+                return ($p['tipo'] ?? '') === 'estetica';
+            }
+
+            return ($p['tipo'] ?? '') === 'salud';
+        });
+
+        return ! empty($filtradosCat) ? array_values($filtradosCat) : $todos;
+    }
+
+    /**
+     * Valida si un profesional dado está capacitado para prestar un servicio específico.
+     */
+    public static function esProfesionalAptoParaServicio(?string $profesional, ?string $servicio): bool
+    {
+        if (empty($profesional) || empty($servicio)) {
+            return true;
+        }
+
+        $profesionalesAptos = self::getProfesionalesPorServicio($servicio);
+        $profNorm = strtolower(trim($profesional));
+
+        foreach ($profesionalesAptos as $p) {
+            if (strtolower(trim($p['nombre'])) === $profNorm || strtolower(trim($p['id'])) === $profNorm) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Mapa estructurado de servicio => nombres de profesionales aptos para consumo frontend.
+     *
+     * @return array<string, array<int, string>>
+     */
+    public static function getMapaServiciosProfesionales(): array
+    {
+        $servicios = self::getServicios();
+        $mapa = [];
+
+        foreach ($servicios as $srv) {
+            $aptos = self::getProfesionalesPorServicio($srv['nombre']);
+            $mapa[$srv['nombre']] = array_map(fn ($p) => $p['nombre'], $aptos);
+        }
+
+        // Servicios adicionales comunes (Urgencia, Revisión de Rutina)
+        $extras = ['Urgencia Médica Inmediata', 'Revisión General de Rutina', 'Consulta Médica General'];
+        foreach ($extras as $extra) {
+            if (! isset($mapa[$extra])) {
+                $aptos = self::getProfesionalesPorServicio($extra);
+                $mapa[$extra] = array_map(fn ($p) => $p['nombre'], $aptos);
+            }
+        }
+
+        return $mapa;
     }
 
     /**
@@ -89,7 +284,29 @@ class CitaService
     }
 
     /**
-     * Valida que no exista una cita duplicada por la misma hora y la misma mascota.
+     * Comprueba si una mascota ya tiene una cita activa agendada en la fecha dada.
+     */
+    public static function mascotaTieneCitaEnFecha(int $idMascota, string $fecha, ?int $excludeCitaId = null): bool
+    {
+        if (! Schema::hasTable('citas')) {
+            return false;
+        }
+
+        $query = DB::table('citas')
+            ->where('id_mascota', $idMascota)
+            ->where('fecha', $fecha)
+            ->where('estado', '!=', 'Cancelada');
+
+        if ($excludeCitaId) {
+            $query->where('id_cita', '!=', $excludeCitaId);
+        }
+
+        return $query->exists();
+    }
+
+    /**
+     * Valida que una mascota solo tenga como máximo UNA cita por día.
+     * Impide registrar más de una cita para la misma mascota en la misma fecha (excepto canceladas).
      *
      * @throws ValidationException
      */
@@ -99,31 +316,29 @@ class CitaService
             return;
         }
 
-        $horaPartes = explode(':', trim($hora));
-        $horaCorta = (count($horaPartes) >= 2)
-            ? str_pad($horaPartes[0], 2, '0', STR_PAD_LEFT).':'.str_pad($horaPartes[1], 2, '0', STR_PAD_LEFT)
-            : substr($hora, 0, 5);
-        $horaNormalizada = "{$horaCorta}:00";
-
         $query = DB::table('citas')
             ->where('id_mascota', $idMascota)
             ->where('fecha', $fecha)
-            ->where(function ($q) use ($hora, $horaNormalizada, $horaCorta) {
-                $q->where('hora', $hora)
-                    ->orWhere('hora', $horaNormalizada)
-                    ->orWhere('hora', 'like', "{$horaCorta}%");
-            })
             ->where('estado', '!=', 'Cancelada');
 
         if ($excludeCitaId) {
             $query->where('id_cita', '!=', $excludeCitaId);
         }
 
-        $citasExistentes = $query->get();
+        $citaExistente = $query->first();
 
-        if ($citasExistentes->isNotEmpty()) {
+        if ($citaExistente) {
+            $horaExistente = substr($citaExistente->hora, 0, 5);
+            $nombreMascota = '';
+            if (Schema::hasTable('mascotas')) {
+                $m = DB::table('mascotas')->where('id_mascota', $idMascota)->first();
+                if ($m) {
+                    $nombreMascota = " '{$m->nombre}'";
+                }
+            }
+
             throw ValidationException::withMessages([
-                'duplicado' => ['Ya existe una cita agendada para esta mascota en la misma fecha y hora. No se permiten citas simultáneas para la misma mascota.'],
+                'duplicado' => ["La mascota{$nombreMascota} ya cuenta con una cita agendada para el día {$fecha} a las {$horaExistente} hrs. Solo se permite una cita al día por mascota."],
             ]);
         }
     }
@@ -235,8 +450,17 @@ class CitaService
      *
      * @return array{disponible: bool, motivo_cierre: ?string, slots: array<int, string>}
      */
-    public static function obtenerHorariosDisponibles(string $fecha, ?string $profesional = null, ?string $servicio = null): array
+    public static function obtenerHorariosDisponibles(string $fecha, ?string $profesional = null, ?string $servicio = null, ?int $idMascota = null, ?int $excludeCitaId = null): array
     {
+        // 0. Verificar si la mascota ya tiene una cita activa para este día (R-Cita-Unica)
+        if ($idMascota && self::mascotaTieneCitaEnFecha($idMascota, $fecha, $excludeCitaId)) {
+            return [
+                'disponible' => false,
+                'motivo_cierre' => 'Esta mascota ya cuenta con una cita agendada para esta fecha. Solo se permite una cita al día por mascota.',
+                'slots' => [],
+            ];
+        }
+
         // 1. Verificar si es un día no laborable oficial (R-31, R-34)
         if (Schema::hasTable('dias_no_laborables')) {
             $diaNoLaborable = DB::table('dias_no_laborables')
@@ -338,11 +562,20 @@ class CitaService
                     ->map(fn ($h) => substr($h, 0, 5))
                     ->toArray();
             } else {
-                $totalProfesionales = count(self::getProfesionales());
-                $citasOcupadas = DB::table('citas')
+                $profesionalesAptos = self::getProfesionalesPorServicio($servicio);
+                $nombresAptos = array_map(fn ($p) => $p['nombre'], $profesionalesAptos);
+                $totalProfesionales = count($profesionalesAptos) ?: count(self::getProfesionales());
+
+                $queryCitas = DB::table('citas')
                     ->where('fecha', $fecha)
-                    ->where('estado', '!=', 'Cancelada')
-                    ->select(DB::raw("SUBSTRING(hora, 1, 5) as hora_corta"), DB::raw('COUNT(*) as total'))
+                    ->where('estado', '!=', 'Cancelada');
+
+                if (! empty($servicio) && ! empty($nombresAptos)) {
+                    $queryCitas->whereIn('profesional', $nombresAptos);
+                }
+
+                $citasOcupadas = $queryCitas
+                    ->select(DB::raw('SUBSTRING(hora, 1, 5) as hora_corta'), DB::raw('COUNT(*) as total'))
                     ->groupBy('hora_corta')
                     ->having('total', '>=', $totalProfesionales)
                     ->pluck('hora_corta')

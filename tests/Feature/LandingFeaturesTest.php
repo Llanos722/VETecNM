@@ -31,6 +31,7 @@ class LandingFeaturesTest extends TestCase
                 nombre VARCHAR(100) NOT NULL,
                 especie VARCHAR(50) NOT NULL,
                 raza VARCHAR(50),
+                edad INTEGER,
                 peso DECIMAL(5,2)
             )
         ');
@@ -102,6 +103,26 @@ class LandingFeaturesTest extends TestCase
                 activo BOOLEAN DEFAULT 1,
                 created_at TIMESTAMP,
                 updated_at TIMESTAMP
+            )
+        ');
+
+        DB::statement('
+            CREATE TABLE IF NOT EXISTS categorias (
+                id_categoria INTEGER PRIMARY KEY AUTOINCREMENT,
+                nombre VARCHAR(100) NOT NULL,
+                descripcion TEXT
+            )
+        ');
+
+        DB::statement('
+            CREATE TABLE IF NOT EXISTS productos (
+                id_producto INTEGER PRIMARY KEY AUTOINCREMENT,
+                id_categoria INTEGER,
+                nombre VARCHAR(150) NOT NULL,
+                descripcion TEXT,
+                precio DECIMAL(10,2) NOT NULL,
+                stock INTEGER DEFAULT 0,
+                imagen_url VARCHAR(255)
             )
         ');
 
@@ -228,5 +249,29 @@ class LandingFeaturesTest extends TestCase
         ]);
 
         $response->assertSessionHasErrors('telefono');
+    }
+
+    public function test_landing_page_displays_products_catalog(): void
+    {
+        $catId = DB::table('categorias')->insertGetId([
+            'nombre' => 'Alimentos',
+            'descripcion' => 'Croquetas y premios',
+        ]);
+
+        $prodId = DB::table('productos')->insertGetId([
+            'id_categoria' => $catId,
+            'nombre' => 'Croquetas NutriCan 15kg',
+            'descripcion' => 'Alimento balanceado premium para canes',
+            'precio' => 850.00,
+            'stock' => 10,
+        ]);
+
+        $response = $this->get('/');
+
+        $response->assertOk();
+        $response->assertSee('Productos, Alimentos y Cuidados Veterinarios');
+        $response->assertSee('Croquetas NutriCan 15kg');
+        $response->assertSee('850.00');
+        $response->assertSee('Alimentos');
     }
 }

@@ -54,6 +54,7 @@ return new class extends Migration
                 $table->string('nombre', 100);
                 $table->string('especie', 50);
                 $table->string('raza', 50)->nullable();
+                $table->integer('edad')->nullable();
                 $table->decimal('peso', 5, 2)->nullable();
 
                 $table->foreign('id_usuario')->references('id_usuario')->on('usuarios')->onDelete('cascade');

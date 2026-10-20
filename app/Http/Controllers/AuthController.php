@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Services\CitaService;
+use App\Services\MascotaService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -98,20 +99,26 @@ class AuthController extends Controller
         $request->validate([
             'nombre' => 'required|string|max:100',
             'email' => 'required|email|max:100|unique:usuarios,email',
-            'telefono' => 'nullable|string|max:20',
+            'telefono' => 'required|string|max:20|unique:usuarios,telefono',
             'password' => 'required|string|min:6|confirmed',
             'nombre_mascota' => 'nullable|string|max:100',
             'especie_mascota' => 'nullable|string|max:50',
             'raza_mascota' => 'nullable|string|max:50',
+            'edad_mascota' => 'nullable|integer|min:0|max:100',
             'peso_mascota' => 'nullable|numeric|min:0|max:999.99',
         ], [
             'nombre.required' => 'El nombre es obligatorio.',
             'email.required' => 'El correo es obligatorio.',
             'email.email' => 'Ingresa un correo electrónico válido.',
             'email.unique' => 'Este correo ya está registrado.',
+            'telefono.required' => 'El número de teléfono es obligatorio.',
+            'telefono.unique' => 'Este número de teléfono ya está registrado por otro cliente. Solo se permite un número de teléfono por cliente.',
             'password.required' => 'La contraseña es obligatoria.',
             'password.min' => 'La contraseña debe tener al menos 6 caracteres.',
             'password.confirmed' => 'Las contraseñas no coinciden.',
+            'edad_mascota.integer' => 'La edad de la mascota debe ser un número entero.',
+            'edad_mascota.min' => 'La edad no puede ser menor a 0.',
+            'edad_mascota.max' => 'La edad no puede exceder 100 años.',
         ]);
 
         // Insert new user and get ID
@@ -131,13 +138,13 @@ class AuthController extends Controller
 
         // Register pet if provided
         if ($request->filled('nombre_mascota')) {
-            DB::table('mascotas')->insert([
-                'id_usuario' => $userId,
+            MascotaService::crearMascotaConDuenos([
                 'nombre' => trim($request->input('nombre_mascota')),
                 'especie' => $request->input('especie_mascota') ? trim($request->input('especie_mascota')) : 'Perro',
                 'raza' => $request->filled('raza_mascota') ? trim($request->input('raza_mascota')) : null,
+                'edad' => $request->input('edad_mascota'),
                 'peso' => $request->input('peso_mascota'),
-            ]);
+            ], $userId);
         }
 
         return redirect()->route('login')->with('success', 'register_ok');
@@ -210,9 +217,7 @@ class AuthController extends Controller
         $usuario = DB::table('usuarios')->where('id_usuario', $userId)->first();
 
         // Mascotas del cliente con estadísticas de consultas y citas
-        $misMascotas = DB::table('mascotas')
-            ->where('id_usuario', $userId)
-            ->get();
+        $misMascotas = MascotaService::getMascotasDeUsuario($userId);
 
         foreach ($misMascotas as $m) {
             $m->total_citas = DB::table('citas')->where('id_mascota', $m->id_mascota)->count();
@@ -223,12 +228,14 @@ class AuthController extends Controller
                 ->orderBy('fecha', 'asc')
                 ->orderBy('hora', 'asc')
                 ->first();
+            $m->duenos = MascotaService::getDuenosDeMascota($m->id_mascota);
         }
 
         // Citas agendadas del cliente
+        $mascotaIds = $misMascotas->pluck('id_mascota')->toArray();
         $citas = DB::table('citas')
             ->join('mascotas', 'citas.id_mascota', '=', 'mascotas.id_mascota')
-            ->where('mascotas.id_usuario', $userId)
+            ->whereIn('citas.id_mascota', $mascotaIds)
             ->select('citas.*', 'mascotas.nombre as mascota_nombre', 'mascotas.especie', 'mascotas.raza', 'mascotas.peso as mascota_peso')
             ->orderBy('citas.fecha', 'desc')
             ->orderBy('citas.hora', 'desc')
@@ -238,6 +245,7 @@ class AuthController extends Controller
 
         $serviciosPorCategoria = CitaService::getServiciosPorCategoria();
         $serviciosLista = CitaService::getServicios();
+        $mapaServiciosProfesionales = CitaService::getMapaServiciosProfesionales();
         $serviciosDisponibles = [];
         foreach ($serviciosPorCategoria as $catName => $items) {
             $serviciosDisponibles[$catName] = array_column($items, 'nombre');
@@ -250,7 +258,8 @@ class AuthController extends Controller
             'profesionales',
             'serviciosDisponibles',
             'serviciosPorCategoria',
-            'serviciosLista'
+            'serviciosLista',
+            'mapaServiciosProfesionales'
         ));
     }
 
@@ -282,12 +291,7 @@ class AuthController extends Controller
         ]);
 
         // Verificar que la mascota pertenezca al usuario logueado (o si es admin)
-        $mascota = DB::table('mascotas')
-            ->where('id_mascota', $request->id_mascota)
-            ->where('id_usuario', $userId)
-            ->first();
-
-        if (! $mascota && session('user_rol') !== 'admin') {
+        if (! MascotaService::usuarioEsDuenoDeMascota($userId, (int) $request->id_mascota) && session('user_rol') !== 'admin') {
             return redirect()->back()->with('error', 'La mascota seleccionada no corresponde a tu cuenta.');
         }
 
@@ -305,6 +309,12 @@ class AuthController extends Controller
 
         // 2. VALIDACIÓN DE DISPONIBILIDAD DEL TRABAJADOR (R-32): Evitar citas simultáneas y bloqueos
         $profesional = trim($request->profesional);
+        if (! CitaService::esProfesionalAptoParaServicio($profesional, $request->servicio)) {
+            return redirect()->back()
+                ->withInput()
+                ->withErrors(['profesional' => 'El profesional seleccionado no realiza el servicio solicitado. Por favor selecciona un especialista calificado.']);
+        }
+
         $dispTrabajador = CitaService::verificarDisponibilidadTrabajador($profesional, $request->fecha, $request->hora);
         if (! $dispTrabajador['disponible']) {
             return redirect()->back()
@@ -324,9 +334,13 @@ class AuthController extends Controller
         try {
             CitaService::validarDuplicado((int) $request->id_mascota, $request->fecha, $request->hora, $motivoCompleto, $request->servicio);
         } catch (ValidationException $e) {
+            $msg = $e->validator->errors()->first('duplicado');
+
             return redirect()->back()
                 ->withInput()
-                ->with('alerta_error_general', $e->validator->errors()->first('duplicado'));
+                ->with('error', $msg)
+                ->with('alerta_error_general', $msg)
+                ->withErrors(['duplicado' => $msg]);
         }
 
         // Obtener teléfono del usuario para la cita
@@ -372,16 +386,29 @@ class AuthController extends Controller
             'nombre' => 'required|string|max:100',
             'especie' => 'required|string|max:50',
             'raza' => 'nullable|string|max:50',
+            'edad' => 'nullable|integer|min:0|max:100',
             'peso' => 'nullable|numeric|min:0|max:999.99',
+        ], [
+            'edad.integer' => 'La edad debe ser un número entero.',
+            'edad.min' => 'La edad no puede ser menor a 0.',
+            'edad.max' => 'La edad no puede exceder 100 años.',
         ]);
 
-        DB::table('mascotas')->insert([
-            'id_usuario' => session('user_id'),
-            'nombre' => trim($request->nombre),
-            'especie' => trim($request->especie),
-            'raza' => $request->raza ? trim($request->raza) : null,
-            'peso' => $request->peso,
-        ]);
+        try {
+            MascotaService::crearMascotaConDuenos([
+                'nombre' => $request->nombre,
+                'especie' => $request->especie,
+                'raza' => $request->raza,
+                'edad' => $request->edad,
+                'peso' => $request->peso,
+            ], session('user_id'));
+        } catch (ValidationException $e) {
+            $errorMsg = $e->validator->errors()->first('duplicado') ?? $e->getMessage();
+
+            return redirect()->back()
+                ->withInput()
+                ->with('error', $errorMsg);
+        }
 
         return redirect()->route('dashboard')->with('success', '¡Tu mascota ha sido registrada correctamente!');
     }
@@ -415,18 +442,99 @@ class AuthController extends Controller
                 'usuarios.telefono as dueno_telefono'
             );
 
-        // Si no es admin/recepcionista, solo puede consultar el comprobante de su propia mascota
-        if (! in_array($userRol, ['admin', 'recepcionista'], true)) {
-            $citaQuery->where('mascotas.id_usuario', $userId);
-        }
-
         $cita = $citaQuery->first();
 
         if (! $cita) {
-            return redirect()->route('dashboard')->with('error', 'La cita solicitada no existe o no tienes autorización para visualizar su comprobante.');
+            return redirect()->route('dashboard')->with('error', 'La cita solicitada no existe.');
+        }
+
+        // Si no es admin/recepcionista, solo puede consultar el comprobante si es dueño de la mascota
+        if (! in_array($userRol, ['admin', 'recepcionista'], true)) {
+            if (! MascotaService::usuarioEsDuenoDeMascota($userId, (int) $cita->id_mascota)) {
+                return redirect()->route('dashboard')->with('error', 'No tienes autorización para visualizar este comprobante.');
+            }
         }
 
         return view('citas.comprobante', compact('cita'));
+    }
+
+    /**
+     * Update client password from user profile with immediate feedback.
+     */
+    public function updatePassword(Request $request)
+    {
+        if (! session()->has('user_id')) {
+            if ($request->expectsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Tu sesión ha expirado. Por favor inicia sesión nuevamente.',
+                ], 401);
+            }
+
+            return redirect()->route('login')->with('error', 'acceso_denegado');
+        }
+
+        $userId = session('user_id');
+
+        $request->validate([
+            'current_password' => 'required|string',
+            'password' => 'required|string|min:6|confirmed|different:current_password',
+        ], [
+            'current_password.required' => 'Debes ingresar tu contraseña actual.',
+            'password.required' => 'Debes ingresar una nueva contraseña.',
+            'password.min' => 'La nueva contraseña debe tener al menos 6 caracteres.',
+            'password.confirmed' => 'La confirmación de la nueva contraseña no coincide.',
+            'password.different' => 'La nueva contraseña debe ser diferente a la contraseña actual.',
+        ]);
+
+        $usuario = DB::table('usuarios')->where('id_usuario', $userId)->first();
+
+        if (! $usuario) {
+            if ($request->expectsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Usuario no encontrado en el sistema.',
+                ], 404);
+            }
+
+            return redirect()->route('login');
+        }
+
+        $isPasswordValid = Hash::check($request->current_password, $usuario->password) || ($request->current_password === $usuario->password);
+
+        if (! $isPasswordValid) {
+            if ($request->expectsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'La contraseña actual ingresada es incorrecta.',
+                    'errors' => [
+                        'current_password' => ['La contraseña actual ingresada es incorrecta.'],
+                    ],
+                ], 422);
+            }
+
+            return redirect()->back()
+                ->withInput()
+                ->withErrors(['current_password' => 'La contraseña actual ingresada es incorrecta.'])
+                ->with('error_password', 'La contraseña actual ingresada es incorrecta.');
+        }
+
+        DB::table('usuarios')
+            ->where('id_usuario', $userId)
+            ->update([
+                'password' => Hash::make($request->password),
+            ]);
+
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => '¡Tu contraseña ha sido modificada con éxito!',
+                'detail' => 'Tu clave de acceso ha sido actualizada correctamente en el sistema. Tu cuenta ahora se encuentra protegida con tu nueva clave de acceso.',
+            ]);
+        }
+
+        return redirect()->route('dashboard')
+            ->with('password_updated_success', '¡Tu contraseña ha sido modificada con éxito! Tu cuenta ahora está protegida con tu nueva clave de acceso.');
     }
 
     /**

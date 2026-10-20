@@ -30,6 +30,7 @@ class AdminRedirectAndUserPortalTest extends TestCase
                 nombre VARCHAR(100) NOT NULL,
                 especie VARCHAR(50) NOT NULL,
                 raza VARCHAR(50),
+                edad INTEGER,
                 peso DECIMAL(5,2)
             )
         ');
@@ -49,6 +50,26 @@ class AdminRedirectAndUserPortalTest extends TestCase
                 canal VARCHAR(30) DEFAULT "web",
                 notas TEXT,
                 fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        ');
+
+        DB::statement('
+            CREATE TABLE IF NOT EXISTS categorias (
+                id_categoria INTEGER PRIMARY KEY AUTOINCREMENT,
+                nombre VARCHAR(100) NOT NULL,
+                descripcion TEXT
+            )
+        ');
+
+        DB::statement('
+            CREATE TABLE IF NOT EXISTS productos (
+                id_producto INTEGER PRIMARY KEY AUTOINCREMENT,
+                id_categoria INTEGER,
+                nombre VARCHAR(150) NOT NULL,
+                descripcion TEXT,
+                precio DECIMAL(10,2) NOT NULL,
+                stock INTEGER DEFAULT 0,
+                imagen_url VARCHAR(255)
             )
         ');
     }
@@ -136,5 +157,63 @@ class AdminRedirectAndUserPortalTest extends TestCase
         $response->assertSee('Comprobante Oficial de Cita Médica');
         $response->assertSee('Kira');
         $response->assertSee('Ana López');
+    }
+
+    public function test_admin_dashboard_shows_recent_products_inventory(): void
+    {
+        $catId = DB::table('categorias')->insertGetId([
+            'nombre' => 'Farmacia Veterinaria',
+            'descripcion' => 'Medicamentos y tratamientos',
+        ]);
+
+        $prodId = DB::table('productos')->insertGetId([
+            'id_categoria' => $catId,
+            'nombre' => 'Antibiótico Canino 250mg',
+            'descripcion' => 'Tratamiento antibacteriano',
+            'precio' => 280.00,
+            'stock' => 12,
+        ]);
+
+        $response = $this->withSession([
+            'user_id' => 1,
+            'user_nombre' => 'Admin VETecNM',
+            'user_email' => 'admin@vetecnm.com',
+            'user_rol' => 'admin',
+        ])->get(route('admin.dashboard'));
+
+        $response->assertOk();
+        $response->assertSee('Productos y Artículos en Inventario');
+        $response->assertSee('Antibiótico Canino 250mg');
+        $response->assertSee('Farmacia Veterinaria');
+        $response->assertSee('12 unidades');
+    }
+
+    public function test_admin_can_view_products_catalog_with_tabs(): void
+    {
+        $catId = DB::table('categorias')->insertGetId([
+            'nombre' => 'Accesorios',
+            'descripcion' => 'Collares y juguetes',
+        ]);
+
+        $prodId = DB::table('productos')->insertGetId([
+            'id_categoria' => $catId,
+            'nombre' => 'Collar Antipulgas Premium',
+            'descripcion' => 'Protección 8 meses',
+            'precio' => 350.00,
+            'stock' => 8,
+        ]);
+
+        $response = $this->withSession([
+            'user_id' => 1,
+            'user_nombre' => 'Admin VETecNM',
+            'user_email' => 'admin@vetecnm.com',
+            'user_rol' => 'admin',
+        ])->get(route('admin.productos.index'));
+
+        $response->assertOk();
+        $response->assertSee('Productos y Artículos');
+        $response->assertSee('Categorías del Catálogo');
+        $response->assertSee('Collar Antipulgas Premium');
+        $response->assertSee('Accesorios');
     }
 }

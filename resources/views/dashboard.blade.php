@@ -779,6 +779,367 @@
             background: #f8fafc;
         }
 
+        /* =====================================================================
+           ESTILOS: PERFIL DE USUARIO, MODIFICACIÓN DE CONTRASEÑA Y NOTIFICACIONES
+           ===================================================================== */
+        .profile-security-grid {
+            display: grid;
+            grid-template-columns: 1fr 1.35fr;
+            gap: 2rem;
+            align-items: flex-start;
+        }
+
+        .profile-info-card {
+            background: #ffffff;
+            border: 1px solid var(--slate-200);
+            border-radius: 14px;
+            padding: 1.8rem;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.03);
+        }
+
+        .profile-card-header-art {
+            text-align: center;
+            padding-bottom: 1.4rem;
+            border-bottom: 1px solid var(--slate-200);
+            margin-bottom: 1.4rem;
+        }
+
+        .profile-avatar-big {
+            width: 72px;
+            height: 72px;
+            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+            border: 2px solid #93c5fd;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: #1d4ed8;
+            margin: 0 auto 0.9rem auto;
+        }
+
+        .profile-card-header-art h4 {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: #0f172a;
+            margin-bottom: 4px;
+        }
+
+        .profile-role-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #dcfce7;
+            color: #15803d;
+            border: 1px solid #bbf7d0;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.78rem;
+            font-weight: 700;
+        }
+
+        .profile-meta-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .profile-meta-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.88rem;
+            padding: 8px 10px;
+            background: #f8fafc;
+            border-radius: 8px;
+            border: 1px solid #f1f5f9;
+        }
+
+        .profile-meta-row .meta-label {
+            color: #64748b;
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+        }
+
+        .profile-meta-row .meta-value {
+            color: #0f172a;
+            font-weight: 700;
+            text-align: right;
+        }
+
+        .profile-security-callout {
+            margin-top: 1.5rem;
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 10px;
+            padding: 1rem 1.1rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            color: #1e40af;
+            font-size: 0.85rem;
+        }
+
+        .profile-security-callout i {
+            font-size: 1.3rem;
+            color: #2563eb;
+            margin-top: 2px;
+        }
+
+        .security-password-card {
+            background: #ffffff;
+            border: 1px solid var(--slate-200);
+            border-radius: 14px;
+            padding: 1.8rem;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.03);
+        }
+
+        .security-card-header {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding-bottom: 1.25rem;
+            border-bottom: 1px solid var(--slate-200);
+            margin-bottom: 1.5rem;
+        }
+
+        .security-icon-circle {
+            width: 48px;
+            height: 48px;
+            min-width: 48px;
+            background: #e0f2fe;
+            color: #0284c7;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            border: 1px solid #bae6fd;
+        }
+
+        .security-card-header h4 {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: #0f172a;
+            margin-bottom: 3px;
+        }
+
+        .security-card-header p {
+            font-size: 0.84rem;
+            color: #64748b;
+            margin: 0;
+        }
+
+        .form-group-password {
+            margin-bottom: 1.25rem;
+        }
+
+        .form-group-password label {
+            display: block;
+            font-weight: 600;
+            font-size: 0.88rem;
+            margin-bottom: 6px;
+            color: #1e293b;
+        }
+
+        .password-input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .password-field-input {
+            width: 100%;
+            padding: 0.72rem 2.8rem 0.72rem 1rem;
+            border-radius: 10px;
+            border: 1.5px solid #cbd5e1;
+            background: #ffffff;
+            font-size: 0.92rem;
+            color: #0f172a;
+            outline: none;
+            transition: all 0.2s ease;
+            box-sizing: border-box;
+        }
+
+        .password-field-input:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+        }
+
+        .btn-toggle-eye {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #94a3b8;
+            font-size: 1rem;
+            cursor: pointer;
+            padding: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: color 0.15s;
+        }
+
+        .btn-toggle-eye:hover {
+            color: #1e293b;
+        }
+
+        .field-error-msg {
+            display: block;
+            color: #dc2626;
+            font-size: 0.78rem;
+            margin-top: 4px;
+            font-weight: 600;
+        }
+
+        .password-hints-box {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 0.9rem 1.1rem;
+            font-size: 0.82rem;
+            color: #475569;
+            margin-top: 1.2rem;
+        }
+
+        .password-hints-box strong {
+            display: block;
+            margin-bottom: 5px;
+            color: #1e293b;
+        }
+
+        .password-hints-box ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .password-hints-box ul li {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .password-hints-box ul li i {
+            color: #10b981;
+            font-size: 0.75rem;
+        }
+
+        /* Notificación / Alerta Emergente en Pantalla */
+        .popup-alert-success-box {
+            background: #ffffff;
+            border-radius: 20px;
+            padding: 2.5rem 2.2rem;
+            text-align: center;
+            max-width: 480px;
+            width: 100%;
+            box-shadow: 0 25px 60px rgba(15, 23, 42, 0.35);
+            border: 2px solid #bbf7d0;
+            animation: popupBounce 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+        }
+
+        @keyframes popupBounce {
+            0% { transform: scale(0.85); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .popup-icon-wrapper {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.4rem auto;
+            color: #ffffff;
+            font-size: 2.6rem;
+            box-shadow: 0 10px 25px rgba(16, 185, 129, 0.4);
+            position: relative;
+        }
+
+        .popup-alert-success-box h3 {
+            font-size: 1.45rem;
+            font-weight: 800;
+            color: #0f172a;
+            margin-bottom: 8px;
+        }
+
+        .popup-alert-success-box p {
+            color: #475569;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            margin: 0 0 1.2rem 0;
+        }
+
+        .popup-alert-meta {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: #059669;
+            background: #ecfdf5;
+            padding: 4px 12px;
+            border-radius: 20px;
+            border: 1px solid #a7f3d0;
+        }
+
+        .btn-popup-alert-dismiss {
+            background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+            color: #ffffff;
+            border: none;
+            padding: 0.85rem 2.2rem;
+            font-size: 0.95rem;
+            font-weight: 700;
+            border-radius: 10px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 6px 18px rgba(16, 185, 129, 0.35);
+            transition: all 0.2s ease;
+        }
+
+        .btn-popup-alert-dismiss:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(16, 185, 129, 0.45);
+        }
+
+        .toast-password-feedback {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: #0f172a;
+            color: #ffffff;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-size: 0.92rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+            z-index: 100000;
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            pointer-events: none;
+        }
+
+        .toast-password-feedback.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
         @media (max-width: 768px) {
             .client-profile-hero {
                 flex-direction: column;
@@ -791,6 +1152,10 @@
 
             .portal-tabs-nav {
                 overflow-x: auto;
+            }
+
+            .profile-security-grid {
+                grid-template-columns: 1fr;
             }
         }
     </style>
@@ -813,6 +1178,10 @@
             <a href="{{ route('home') }}" class="nav-link-btn">
                 <i class="fa-solid fa-globe"></i> Portal Público
             </a>
+
+            <button type="button" class="nav-link-btn" onclick="openChangePasswordModal()" style="background: rgba(255, 255, 255, 0.12); border: 1px solid rgba(255, 255, 255, 0.2); cursor: pointer;" title="Cambiar mi contraseña">
+                <i class="fa-solid fa-key" style="color: #38bdf8;"></i> Cambiar Contraseña
+            </button>
 
             <div class="user-profile-badge">
                 <div class="avatar-initials">
@@ -901,6 +1270,9 @@
                 <button type="button" class="btn-portal-secondary" onclick="openPetModal()">
                     <i class="fa-solid fa-paw"></i> Registrar Mascota
                 </button>
+                <button type="button" class="btn-portal-secondary" onclick="openChangePasswordModal()" style="border-color: #cbd5e1; color: #334155;">
+                    <i class="fa-solid fa-key" style="color: #0284c7;"></i> Cambiar Contraseña
+                </button>
             </div>
         </div>
 
@@ -914,6 +1286,9 @@
             </button>
             <button type="button" class="tab-btn" onclick="switchTab('tab-servicios', this)">
                 <i class="fa-solid fa-stethoscope"></i> Catálogo de Servicios y Tarifas
+            </button>
+            <button type="button" class="tab-btn" onclick="switchTab('tab-perfil', this)">
+                <i class="fa-solid fa-user-shield"></i> Mi Perfil & Seguridad
             </button>
         </div>
 
@@ -1076,6 +1451,10 @@
 
                                 <div class="pet-info-list">
                                     <div class="pet-info-item">
+                                        <span class="pet-info-label"><i class="fa-solid fa-cake-candles" style="color: #64748b;"></i> Edad:</span>
+                                        <span class="pet-info-val">{{ isset($m->edad) && $m->edad !== null ? $m->edad . ' año(s)' : 'Sin registrar' }}</span>
+                                    </div>
+                                    <div class="pet-info-item">
                                         <span class="pet-info-label"><i class="fa-solid fa-weight-scale" style="color: #64748b;"></i> Peso Registrado:</span>
                                         <span class="pet-info-val">{{ $m->peso ? $m->peso . ' kg' : 'Sin registrar' }}</span>
                                     </div>
@@ -1093,6 +1472,14 @@
                                             @endif
                                         </span>
                                     </div>
+                                    @if(isset($m->duenos) && $m->duenos->count() > 1)
+                                        <div class="pet-info-item">
+                                            <span class="pet-info-label"><i class="fa-solid fa-users" style="color: #64748b;"></i> Dueños compartidos:</span>
+                                            <span class="pet-info-val" style="color: #059669; font-weight: 600;">
+                                                {{ $m->duenos->pluck('nombre')->join(', ') }}
+                                            </span>
+                                        </div>
+                                    @endif
                                 </div>
 
                                 <div class="pet-card-footer">
@@ -1153,6 +1540,130 @@
             </div>
         </div>
 
+        <!-- =========================================================================
+             PESTAÑA 4: MI PERFIL Y SEGURIDAD (MODIFICAR CONTRASEÑA)
+             ========================================================================= -->
+        <div id="tab-perfil" class="tab-content">
+            <div class="profile-security-grid">
+                <!-- Tarjeta 1: Información de Perfil del Usuario -->
+                <div class="profile-card-custom">
+                    <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 1.5rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 1rem;">
+                        <div class="hero-avatar" style="width: 58px; height: 58px; font-size: 1.6rem;">
+                            <i class="fa-solid fa-user-circle"></i>
+                        </div>
+                        <div>
+                            <h3 style="margin: 0; font-size: 1.2rem; color: #0f172a; font-weight: 700;">
+                                {{ $usuario->nombre ?? session('user_nombre') }}
+                            </h3>
+                            <span style="display: inline-block; background: #e0f2fe; color: #0369a1; font-size: 0.78rem; font-weight: 700; padding: 2px 10px; border-radius: 999px; margin-top: 4px;">
+                                <i class="fa-solid fa-shield-halved"></i> Cliente Verificado
+                            </span>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; flex-direction: column; gap: 14px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed #f1f5f9; padding-bottom: 8px;">
+                            <span style="color: #64748b; font-size: 0.88rem;"><i class="fa-regular fa-envelope" style="color: #0284c7; width: 18px;"></i> Correo Electrónico:</span>
+                            <strong style="color: #1e293b; font-size: 0.92rem;">{{ $usuario->email ?? session('user_email') }}</strong>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed #f1f5f9; padding-bottom: 8px;">
+                            <span style="color: #64748b; font-size: 0.88rem;"><i class="fa-solid fa-phone" style="color: #059669; width: 18px;"></i> Teléfono:</span>
+                            <strong style="color: #1e293b; font-size: 0.92rem;">{{ $usuario->telefono ?? 'Sin registrar' }}</strong>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed #f1f5f9; padding-bottom: 8px;">
+                            <span style="color: #64748b; font-size: 0.88rem;"><i class="fa-solid fa-paw" style="color: #8b5cf6; width: 18px;"></i> Mascotas Registradas:</span>
+                            <strong style="color: #1e293b; font-size: 0.92rem;">{{ $misMascotas->count() }} expediente(s)</strong>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed #f1f5f9; padding-bottom: 8px;">
+                            <span style="color: #64748b; font-size: 0.88rem;"><i class="fa-solid fa-calendar-check" style="color: #d97706; width: 18px;"></i> Consultas Médicas:</span>
+                            <strong style="color: #1e293b; font-size: 0.92rem;">{{ $citas->count() }} cita(s)</strong>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed #f1f5f9; padding-bottom: 8px;">
+                            <span style="color: #64748b; font-size: 0.88rem;"><i class="fa-regular fa-clock" style="color: #64748b; width: 18px;"></i> Miembro desde:</span>
+                            <strong style="color: #1e293b; font-size: 0.92rem;">
+                                {{ isset($usuario->fecha_registro) ? \Carbon\Carbon::parse($usuario->fecha_registro)->format('d/m/Y') : 'Activo' }}
+                            </strong>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 1.5rem; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px 14px;">
+                        <small style="color: #475569; font-size: 0.8rem; display: flex; align-items: flex-start; gap: 8px;">
+                            <i class="fa-solid fa-lock" style="color: #059669; margin-top: 2px;"></i>
+                            <span>Tus datos personales y expedientes clínicos están protegidos bajo protocolos de confidencialidad médica de VETecNM.</span>
+                        </small>
+                    </div>
+                </div>
+
+                <!-- Tarjeta 2: Formulario de Modificación de Contraseña -->
+                <div class="security-password-card">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.2rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 1rem;">
+                        <div>
+                            <h3 style="margin: 0; font-size: 1.2rem; color: #0f172a; font-weight: 700; display: flex; align-items: center; gap: 8px;">
+                                <i class="fa-solid fa-key" style="color: #0284c7;"></i> Modificar Contraseña de Acceso
+                            </h3>
+                            <p style="color: #64748b; font-size: 0.84rem; margin: 4px 0 0 0;">
+                                Actualiza periódicamente tu contraseña para proteger tu información médica y citas.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Contenedor para Alerta Inmediata de Error en Tab -->
+                    <div id="tabPasswordErrorBox" style="display: none; background: #fef2f2; border: 1.5px solid #fecaca; color: #991b1b; padding: 12px 14px; border-radius: 8px; margin-bottom: 1rem; font-size: 0.88rem;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <i class="fa-solid fa-circle-exclamation" style="font-size: 1.1rem; color: #ef4444;"></i>
+                            <span id="tabPasswordErrorMsg" style="font-weight: 600;"></span>
+                        </div>
+                    </div>
+
+                    <form id="formPasswordTab" method="POST" action="{{ route('perfil.password.update') }}" onsubmit="return submitChangePassword(event, this)">
+                        @csrf
+                        <div class="input-group-modern" style="margin-bottom: 1.1rem;">
+                            <label for="tab_current_password"><i class="fa-solid fa-lock" style="color: #64748b;"></i> Contraseña Actual <span style="color: #ef4444;">*</span></label>
+                            <div class="password-input-wrapper">
+                                <input type="password" id="tab_current_password" name="current_password" required placeholder="Ingresa tu contraseña actual" autocomplete="current-password">
+                                <button type="button" class="btn-toggle-eye" onclick="togglePasswordVisibility('tab_current_password', this)" title="Mostrar/ocultar contraseña">
+                                    <i class="fa-regular fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="form-grid-2" style="margin-bottom: 1.1rem;">
+                            <div class="input-group-modern">
+                                <label for="tab_password"><i class="fa-solid fa-key" style="color: #64748b;"></i> Nueva Contraseña <span style="color: #ef4444;">*</span></label>
+                                <div class="password-input-wrapper">
+                                    <input type="password" id="tab_password" name="password" required minlength="6" placeholder="Mínimo 6 caracteres" autocomplete="new-password">
+                                    <button type="button" class="btn-toggle-eye" onclick="togglePasswordVisibility('tab_password', this)" title="Mostrar/ocultar contraseña">
+                                        <i class="fa-regular fa-eye"></i>
+                                    </button>
+                                </div>
+                                <small style="color: #64748b; font-size: 0.76rem; display: block; margin-top: 4px;">Debe contener al menos 6 caracteres.</small>
+                            </div>
+
+                            <div class="input-group-modern">
+                                <label for="tab_password_confirmation"><i class="fa-solid fa-shield-halved" style="color: #64748b;"></i> Confirmar Nueva Contraseña <span style="color: #ef4444;">*</span></label>
+                                <div class="password-input-wrapper">
+                                    <input type="password" id="tab_password_confirmation" name="password_confirmation" required minlength="6" placeholder="Repite la nueva contraseña" autocomplete="new-password">
+                                    <button type="button" class="btn-toggle-eye" onclick="togglePasswordVisibility('tab_password_confirmation', this)" title="Mostrar/ocultar contraseña">
+                                        <i class="fa-regular fa-eye"></i>
+                                    </button>
+                                </div>
+                                <small style="color: #64748b; font-size: 0.76rem; display: block; margin-top: 4px;">Las contraseñas deben ser idénticas.</small>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; justify-content: flex-end; align-items: center; gap: 12px; margin-top: 1.4rem; padding-top: 1rem; border-top: 1px solid #f1f5f9;">
+                            <button type="reset" class="btn-portal-secondary" style="font-size: 0.9rem;">
+                                <i class="fa-solid fa-rotate-left"></i> Limpiar
+                            </button>
+                            <button type="submit" class="btn-portal-primary" id="btnSubmitPasswordTab" style="background: #0284c7; min-width: 190px;">
+                                <i class="fa-solid fa-floppy-disk"></i> Guardar Nueva Contraseña
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
     </div>
 
     <!-- =========================================================================
@@ -1182,19 +1693,22 @@
                 <!-- Mascota que asistirá (R-30) -->
                 <div class="input-group-modern">
                     <label for="cli_id_mascota"><i class="fa-solid fa-paw" style="color: #0284c7;"></i> Mascota que asistirá a la cita *</label>
-                    <select name="id_mascota" id="cli_id_mascota" required>
+                    <select name="id_mascota" id="cli_id_mascota" required onchange="cargarHorariosCliente()">
                         <option value="">-- Selecciona tu mascota --</option>
                         @foreach ($misMascotas as $m)
                             <option value="{{ $m->id_mascota }}">{{ $m->nombre }} ({{ $m->especie }} - {{ $m->raza ?? 'Mestizo' }})</option>
                         @endforeach
                     </select>
+                    <small id="cli_mascota_alerta" style="color: #64748b; font-size: 0.74rem; display: block; margin-top: 3px;">
+                        Recuerda: Cada mascota puede tener como máximo 1 cita por día.
+                    </small>
                 </div>
 
                 <div class="form-grid-2">
                     <!-- Servicio (R-30) -->
                     <div class="input-group-modern">
                         <label for="cli_servicio"><i class="fa-solid fa-stethoscope" style="color: #0284c7;"></i> Servicio Requerido *</label>
-                        <select name="servicio" id="cli_servicio" required onchange="actualizarPrecioServicioCliente(); cargarHorariosCliente();">
+                        <select name="servicio" id="cli_servicio" required onchange="actualizarPrecioServicioCliente(); filtrarProfesionalesCliente(); cargarHorariosCliente();">
                             <option value="" data-precio="" data-precio-texto="" data-duracion="" data-descripcion="" data-incluye="">-- Seleccionar Servicio --</option>
                             @foreach ($serviciosPorCategoria as $catNombre => $srvList)
                                 <optgroup label="{{ $catNombre }}">
@@ -1222,6 +1736,9 @@
                                 <option value="{{ $p['nombre'] }}">{{ $p['nombre'] }} ({{ $p['especialidad'] }})</option>
                             @endforeach
                         </select>
+                        <small id="cli_profesional_hint" style="color: #64748b; font-size: 0.74rem; display: block; margin-top: 3px;">
+                            Filtra los especialistas calificados según el servicio seleccionado.
+                        </small>
                     </div>
                 </div>
 
@@ -1291,7 +1808,7 @@
             <div class="modal-header">
                 <div>
                     <h3><i class="fa-solid fa-paw" style="color: #059669;"></i> Registrar Mascota</h3>
-                    <span style="font-size: 0.82rem; color: #64748b;">Agrega una nueva mascota a tu expediente clínico.</span>
+                    <span style="font-size: 0.82rem; color: #64748b;">Agrega una nueva mascota a tu expediente clínico (máx. 1 registro por nombre y especie).</span>
                 </div>
                 <button type="button" class="modal-close-btn" onclick="closePetModal()">&times;</button>
             </div>
@@ -1317,9 +1834,15 @@
                         <input type="text" name="raza" placeholder="Ej: Golden Retriever, Siamés">
                     </div>
                 </div>
-                <div class="input-group-modern">
-                    <label>Peso en Kg (Opcional)</label>
-                    <input type="number" step="0.01" name="peso" placeholder="Ej: 14.50">
+                <div class="form-grid-2">
+                    <div class="input-group-modern">
+                        <label>Edad en Años (Opcional)</label>
+                        <input type="number" name="edad" min="0" max="100" placeholder="Ej: 3">
+                    </div>
+                    <div class="input-group-modern">
+                        <label>Peso en Kg (Opcional)</label>
+                        <input type="number" step="0.01" name="peso" placeholder="Ej: 14.50">
+                    </div>
                 </div>
                 <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 1.5rem; border-top: 1px solid #e2e8f0; padding-top: 1.2rem;">
                     <button type="button" class="btn-portal-secondary" onclick="closePetModal()">Cancelar</button>
@@ -1353,6 +1876,101 @@
                 </button>
             </div>
         </div>
+    </div>
+
+    <!-- =========================================================================
+         MODAL FLOTANTE: CAMBIAR CONTRASEÑA RÁPIDO (DESDE NAVBAR O HERO)
+         ========================================================================= -->
+    <div id="modalCambiarPassword" class="modal-overlay">
+        <div class="modal-card" style="max-width: 520px;">
+            <div class="modal-header">
+                <div>
+                    <h3><i class="fa-solid fa-key" style="color: #0284c7;"></i> Cambiar Contraseña</h3>
+                    <span style="font-size: 0.84rem; color: #64748b;">Actualiza tu clave de acceso al portal veterinario.</span>
+                </div>
+                <button type="button" class="modal-close-btn" onclick="closeChangePasswordModal()">&times;</button>
+            </div>
+
+            <!-- Contenedor para Alerta Inmediata de Error en Modal -->
+            <div id="modalPasswordErrorBox" style="display: none; background: #fef2f2; border: 1.5px solid #fecaca; color: #991b1b; padding: 12px 14px; border-radius: 8px; margin-bottom: 1rem; font-size: 0.88rem;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <i class="fa-solid fa-circle-exclamation" style="font-size: 1.1rem; color: #ef4444;"></i>
+                    <span id="modalPasswordErrorMsg" style="font-weight: 600;"></span>
+                </div>
+            </div>
+
+            <form id="formPasswordModal" method="POST" action="{{ route('perfil.password.update') }}" onsubmit="return submitChangePassword(event, this)">
+                @csrf
+                <div class="input-group-modern" style="margin-bottom: 1.1rem;">
+                    <label for="modal_current_password"><i class="fa-solid fa-lock" style="color: #64748b;"></i> Contraseña Actual <span style="color: #ef4444;">*</span></label>
+                    <div class="password-input-wrapper">
+                        <input type="password" id="modal_current_password" name="current_password" required placeholder="Ingresa tu contraseña actual" autocomplete="current-password">
+                        <button type="button" class="btn-toggle-eye" onclick="togglePasswordVisibility('modal_current_password', this)" title="Mostrar/ocultar contraseña">
+                            <i class="fa-regular fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="input-group-modern" style="margin-bottom: 1.1rem;">
+                    <label for="modal_password"><i class="fa-solid fa-key" style="color: #64748b;"></i> Nueva Contraseña <span style="color: #ef4444;">*</span></label>
+                    <div class="password-input-wrapper">
+                        <input type="password" id="modal_password" name="password" required minlength="6" placeholder="Mínimo 6 caracteres" autocomplete="new-password">
+                        <button type="button" class="btn-toggle-eye" onclick="togglePasswordVisibility('modal_password', this)" title="Mostrar/ocultar contraseña">
+                            <i class="fa-regular fa-eye"></i>
+                        </button>
+                    </div>
+                    <small style="color: #64748b; font-size: 0.76rem; display: block; margin-top: 4px;">Debe contener al menos 6 caracteres.</small>
+                </div>
+
+                <div class="input-group-modern" style="margin-bottom: 1.2rem;">
+                    <label for="modal_password_confirmation"><i class="fa-solid fa-shield-halved" style="color: #64748b;"></i> Confirmar Nueva Contraseña <span style="color: #ef4444;">*</span></label>
+                    <div class="password-input-wrapper">
+                        <input type="password" id="modal_password_confirmation" name="password_confirmation" required minlength="6" placeholder="Repite la nueva contraseña" autocomplete="new-password">
+                        <button type="button" class="btn-toggle-eye" onclick="togglePasswordVisibility('modal_password_confirmation', this)" title="Mostrar/ocultar contraseña">
+                            <i class="fa-regular fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 1.5rem; border-top: 1px solid #e2e8f0; padding-top: 1.2rem;">
+                    <button type="button" class="btn-portal-secondary" onclick="closeChangePasswordModal()">Cancelar</button>
+                    <button type="submit" class="btn-portal-primary" id="btnSubmitPasswordModal" style="background: #0284c7;">
+                        <i class="fa-solid fa-check"></i> Actualizar Contraseña
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- =========================================================================
+         NOTIFICACIÓN EMERGENTE EN PANTALLA: CONTRASEÑA MODIFICADA CON ÉXITO
+         ========================================================================= -->
+    <div id="modalAlertaPasswordSuccess" class="modal-overlay" style="display: none; z-index: 100005;">
+        <div class="popup-alert-success-box">
+            <div class="popup-alert-icon-ring">
+                <i class="fa-solid fa-shield-halved"></i>
+            </div>
+            <h3 class="popup-alert-title" id="alertaPasswordTitle">
+                ¡Contraseña Modificada con Éxito!
+            </h3>
+            <p class="popup-alert-desc" id="alertaPasswordDesc">
+                Tu contraseña ha sido actualizada inmediatamente en el sistema. A partir de este momento debes utilizar tu nueva clave para acceder a tu perfil y consultas médicas.
+            </p>
+            <div class="popup-alert-badge">
+                <i class="fa-solid fa-lock"></i> Protocolo de Seguridad Activo • VETecNM
+            </div>
+            <div>
+                <button type="button" class="btn-popup-alert-dismiss" onclick="closeAlertaPasswordSuccess()">
+                    <i class="fa-solid fa-circle-check"></i> Entendido, Continuar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast de Feedback Dinámico -->
+    <div id="toastPasswordFeedback" class="toast-password-feedback">
+        <i class="fa-solid fa-circle-check" style="color: #10b981; font-size: 1.2rem;"></i>
+        <span id="toastPasswordText">Contraseña actualizada con éxito</span>
     </div>
 
     <!-- Scripts de Interacción del Portal -->
@@ -1399,9 +2017,75 @@
             }
         }
 
+        const cliProfesionalesList = @json($profesionales);
+        const cliMapaServiciosProfesionales = @json($mapaServiciosProfesionales ?? []);
+
+        function filtrarProfesionalesCliente() {
+            const servicioSelect = document.getElementById('cli_servicio');
+            const profSelect = document.getElementById('cli_profesional');
+            const hint = document.getElementById('cli_profesional_hint');
+            if (!servicioSelect || !profSelect) return;
+
+            const selectedServicio = servicioSelect.value.trim();
+            const prevSelectedProf = profSelect.value;
+
+            let aptos = [];
+            if (!selectedServicio) {
+                aptos = cliProfesionalesList;
+            } else if (cliMapaServiciosProfesionales && cliMapaServiciosProfesionales[selectedServicio]) {
+                const nombresAptos = cliMapaServiciosProfesionales[selectedServicio];
+                aptos = cliProfesionalesList.filter(p => nombresAptos.includes(p.nombre));
+            } else {
+                const srvLower = selectedServicio.toLowerCase();
+                const optSelected = servicioSelect.options[servicioSelect.selectedIndex];
+                const optGroup = optSelected ? optSelected.closest('optgroup') : null;
+                const catGroup = optGroup ? (optGroup.getAttribute('label') || '') : '';
+
+                if (catGroup.toLowerCase().includes('estética') || srvLower.includes('baño') || srvLower.includes('corte') || srvLower.includes('estilismo') || srvLower.includes('profilaxis')) {
+                    aptos = cliProfesionalesList.filter(p => p.tipo === 'estetica');
+                } else if (srvLower.includes('cirug') || srvLower.includes('esteril') || srvLower.includes('castra') || srvLower.includes('trauma')) {
+                    aptos = cliProfesionalesList.filter(p => p.id === 'dra-valenzuela' || p.tipo === 'salud');
+                } else if (srvLower.includes('rayos') || srvLower.includes('imagen') || srvLower.includes('ultrasonido')) {
+                    aptos = cliProfesionalesList.filter(p => p.id === 'dr-gomez' || p.tipo === 'salud');
+                } else {
+                    aptos = cliProfesionalesList.filter(p => p.tipo === 'salud');
+                }
+            }
+
+            if (aptos.length === 0) {
+                aptos = cliProfesionalesList;
+            }
+
+            profSelect.innerHTML = '<option value="">-- Seleccionar Especialista --</option>';
+            let preserve = false;
+            aptos.forEach(p => {
+                const opt = document.createElement('option');
+                opt.value = p.nombre;
+                opt.textContent = `${p.nombre} (${p.especialidad})`;
+                if (p.nombre === prevSelectedProf) {
+                    opt.selected = true;
+                    preserve = true;
+                }
+                profSelect.appendChild(opt);
+            });
+
+            if (!preserve) {
+                profSelect.value = '';
+            }
+
+            if (hint) {
+                if (selectedServicio) {
+                    hint.innerHTML = `<span style="color: #059669; font-weight: 600;"><i class="fa-solid fa-user-check"></i> ${aptos.length} especialista(s) calificado(s) para este servicio.</span>`;
+                } else {
+                    hint.innerHTML = 'Filtra los especialistas calificados según el servicio seleccionado.';
+                }
+            }
+        }
+
         function openAgendarModal() {
             document.getElementById('modalAgendarCliente').classList.add('active');
             actualizarPrecioServicioCliente();
+            filtrarProfesionalesCliente();
             cargarHorariosCliente();
         }
 
@@ -1442,20 +2126,36 @@
             const servicio = document.getElementById('cli_servicio').value;
             const selectHora = document.getElementById('cli_hora');
             const info = document.getElementById('cli_hora_info');
+            const selectMascota = document.getElementById('cli_id_mascota');
+            const idMascota = selectMascota ? selectMascota.value : '';
+            const alertaMascota = document.getElementById('cli_mascota_alerta');
 
             if (!fecha) return;
 
             selectHora.innerHTML = '<option value="">Consultando disponibilidad...</option>';
 
-            fetch(`/api/citas/disponibilidad?fecha=${fecha}&profesional=${encodeURIComponent(profesional)}&servicio=${encodeURIComponent(servicio)}`)
+            fetch(`/api/citas/disponibilidad?fecha=${fecha}&profesional=${encodeURIComponent(profesional)}&servicio=${encodeURIComponent(servicio)}&id_mascota=${encodeURIComponent(idMascota)}`)
                 .then(res => res.json())
                 .then(data => {
                     selectHora.innerHTML = '';
                     if (!data.disponible || !data.slots || data.slots.length === 0) {
                         selectHora.innerHTML = '<option value="">No hay horarios disponibles</option>';
                         info.textContent = data.motivo_cierre || 'No hay horarios disponibles en esta fecha.';
-                        mostrarAlertaAzulCli('El horario ya no se encuentra disponible.', data.motivo_cierre || 'Por favor selecciona otra fecha o profesional.');
+                        if (data.motivo_cierre && data.motivo_cierre.toLowerCase().includes('cita agendada')) {
+                            if (alertaMascota) {
+                                alertaMascota.innerHTML = '<span style="color: #dc2626; font-weight: 600;"><i class="fa-solid fa-triangle-exclamation"></i> ' + data.motivo_cierre + '</span>';
+                            }
+                            mostrarAlertaAzulCli('Límite de citas por día alcanzado', data.motivo_cierre);
+                        } else {
+                            if (alertaMascota) {
+                                alertaMascota.innerHTML = 'Recuerda: Cada mascota puede tener como máximo 1 cita por día.';
+                            }
+                            mostrarAlertaAzulCli('El horario ya no se encuentra disponible.', data.motivo_cierre || 'Por favor selecciona otra fecha o profesional.');
+                        }
                     } else {
+                        if (alertaMascota) {
+                            alertaMascota.innerHTML = 'Recuerda: Cada mascota puede tener como máximo 1 cita por día.';
+                        }
                         info.textContent = `${data.slots.length} turnos disponibles para este profesional y fecha.`;
                         data.slots.forEach(slot => {
                             const opt = document.createElement('option');
@@ -1475,6 +2175,201 @@
                 mostrarAlertaAzulCli(
                     @json(session('horario_no_disponible_alerta')['mensaje']),
                     @json(session('horario_no_disponible_alerta')['detalle'] ?? '')
+                );
+            });
+        @endif
+
+        // =========================================================================
+        // GESTIÓN DE SEGURIDAD Y CAMBIO DE CONTRASEÑA CON ALERTA EMERGENTE
+        // =========================================================================
+        function openChangePasswordModal() {
+            const modal = document.getElementById('modalCambiarPassword');
+            if (modal) {
+                modal.classList.add('active');
+                modal.style.display = 'flex';
+                const errBox = document.getElementById('modalPasswordErrorBox');
+                if (errBox) errBox.style.display = 'none';
+                const firstInput = document.getElementById('modal_current_password');
+                if (firstInput) {
+                    setTimeout(() => firstInput.focus(), 150);
+                }
+            }
+        }
+
+        function closeChangePasswordModal() {
+            const modal = document.getElementById('modalCambiarPassword');
+            if (modal) {
+                modal.classList.remove('active');
+                modal.style.display = 'none';
+            }
+        }
+
+        function togglePasswordVisibility(inputId, btn) {
+            const input = document.getElementById(inputId);
+            if (!input) return;
+            const icon = btn.querySelector('i');
+            if (input.type === 'password') {
+                input.type = 'text';
+                if (icon) {
+                    icon.classList.remove('fa-eye');
+                    icon.classList.add('fa-eye-slash');
+                }
+            } else {
+                input.type = 'password';
+                if (icon) {
+                    icon.classList.remove('fa-eye-slash');
+                    icon.classList.add('fa-eye');
+                }
+            }
+        }
+
+        function openAlertaPasswordSuccess(mensaje, detalle) {
+            const modal = document.getElementById('modalAlertaPasswordSuccess');
+            const titleEl = document.getElementById('alertaPasswordTitle');
+            const descEl = document.getElementById('alertaPasswordDesc');
+            const toast = document.getElementById('toastPasswordFeedback');
+            const toastText = document.getElementById('toastPasswordText');
+
+            if (titleEl && mensaje) {
+                titleEl.textContent = mensaje;
+            }
+            if (descEl && detalle) {
+                descEl.textContent = detalle;
+            }
+
+            if (modal) {
+                modal.classList.add('active');
+                modal.style.display = 'flex';
+            }
+
+            if (toast) {
+                if (toastText && mensaje) toastText.textContent = mensaje;
+                toast.classList.add('show');
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                }, 4500);
+            }
+        }
+
+        function closeAlertaPasswordSuccess() {
+            const modal = document.getElementById('modalAlertaPasswordSuccess');
+            if (modal) {
+                modal.classList.remove('active');
+                modal.style.display = 'none';
+            }
+        }
+
+        function submitChangePassword(event, formEl) {
+            event.preventDefault();
+
+            const isModal = formEl.id === 'formPasswordModal';
+            const errorBox = document.getElementById(isModal ? 'modalPasswordErrorBox' : 'tabPasswordErrorBox');
+            const errorMsg = document.getElementById(isModal ? 'modalPasswordErrorMsg' : 'tabPasswordErrorMsg');
+            const submitBtn = document.getElementById(isModal ? 'btnSubmitPasswordModal' : 'btnSubmitPasswordTab');
+
+            if (errorBox) errorBox.style.display = 'none';
+
+            const currentPass = formEl.querySelector('[name="current_password"]').value;
+            const newPass = formEl.querySelector('[name="password"]').value;
+            const confirmPass = formEl.querySelector('[name="password_confirmation"]').value;
+
+            if (!currentPass || !newPass || !confirmPass) {
+                if (errorBox && errorMsg) {
+                    errorMsg.textContent = 'Por favor completa todos los campos requeridos.';
+                    errorBox.style.display = 'block';
+                }
+                return false;
+            }
+
+            if (newPass.length < 6) {
+                if (errorBox && errorMsg) {
+                    errorMsg.textContent = 'La nueva contraseña debe contener un mínimo de 6 caracteres.';
+                    errorBox.style.display = 'block';
+                }
+                return false;
+            }
+
+            if (newPass !== confirmPass) {
+                if (errorBox && errorMsg) {
+                    errorMsg.textContent = 'La confirmación no coincide con la nueva contraseña.';
+                    errorBox.style.display = 'block';
+                }
+                return false;
+            }
+
+            if (currentPass === newPass) {
+                if (errorBox && errorMsg) {
+                    errorMsg.textContent = 'La nueva contraseña debe ser diferente a la contraseña actual.';
+                    errorBox.style.display = 'block';
+                }
+                return false;
+            }
+
+            const originalBtnHtml = submitBtn ? submitBtn.innerHTML : '';
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Actualizando...';
+            }
+
+            const formData = new FormData(formEl);
+
+            fetch(formEl.action, {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
+                },
+                body: formData
+            })
+            .then(async response => {
+                const data = await response.json().catch(() => ({}));
+                if (!response.ok) {
+                    let message = data.message || 'Ocurrió un error al actualizar la contraseña.';
+                    if (data.errors) {
+                        const firstKey = Object.keys(data.errors)[0];
+                        if (firstKey && data.errors[firstKey][0]) {
+                            message = data.errors[firstKey][0];
+                        }
+                    }
+                    throw new Error(message);
+                }
+                return data;
+            })
+            .then(data => {
+                formEl.reset();
+
+                if (isModal) {
+                    closeChangePasswordModal();
+                }
+
+                // Disparo inmediato de la notificación / alerta emergente en pantalla
+                openAlertaPasswordSuccess(
+                    data.message || '¡Contraseña Modificada con Éxito!',
+                    data.detail || 'Tu contraseña ha sido actualizada inmediatamente en el sistema. A partir de este momento puedes iniciar sesión con tu nueva contraseña.'
+                );
+            })
+            .catch(err => {
+                if (errorBox && errorMsg) {
+                    errorMsg.textContent = err.message || 'Error de conexión. Inténtalo nuevamente.';
+                    errorBox.style.display = 'block';
+                }
+            })
+            .finally(() => {
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalBtnHtml;
+                }
+            });
+
+            return false;
+        }
+
+        @if (session('password_updated_success'))
+            window.addEventListener('DOMContentLoaded', function() {
+                openAlertaPasswordSuccess(
+                    '¡Contraseña Modificada con Éxito!',
+                    @json(session('password_updated_success'))
                 );
             });
         @endif

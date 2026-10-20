@@ -356,7 +356,7 @@
                 </div>
 
                 <div id="boxMascotaExistente" class="form-group" style="margin-bottom: 0;">
-                    <select name="id_mascota" id="pres_id_mascota">
+                    <select name="id_mascota" id="pres_id_mascota" onchange="cargarDisponibilidadPresencial()">
                         <option value="">-- Seleccionar Mascota --</option>
                         @foreach($mascotas as $m)
                             <option value="{{ $m->id_mascota }}" data-owner="{{ $m->id_usuario }}">{{ $m->nombre }} ({{ $m->especie }}) - Dueño: {{ $m->dueno_nombre }}</option>
@@ -392,7 +392,7 @@
             <div class="form-row">
                 <div class="form-group">
                     <label for="pres_servicio">Servicio Requerido *</label>
-                    <select name="servicio" id="pres_servicio" required onchange="actualizarPrecioPresencial(); cargarDisponibilidadPresencial();">
+                    <select name="servicio" id="pres_servicio" required onchange="actualizarPrecioPresencial(); filtrarProfesionalesPresencial(); cargarDisponibilidadPresencial();">
                         <option value="" data-precio="" data-precio-texto="">-- Seleccionar Servicio --</option>
                         @foreach($serviciosPorCategoria as $catNombre => $srvList)
                             <optgroup label="{{ $catNombre }}">
@@ -415,6 +415,9 @@
                             <option value="{{ $p['nombre'] }}">{{ $p['nombre'] }} ({{ $p['especialidad'] }})</option>
                         @endforeach
                     </select>
+                    <small id="pres_profesional_hint" style="color: #64748b; font-size: 0.74rem; display: block; margin-top: 3px;">
+                        Filtra los especialistas calificados según el servicio seleccionado.
+                    </small>
                 </div>
             </div>
 
@@ -844,6 +847,54 @@
             });
     }
 
+    const adminProfesionalesList = @json($profesionales);
+    const adminMapaServiciosProfesionales = @json($mapaServiciosProfesionales ?? []);
+
+    function filtrarProfesionalesPresencial() {
+        const srvSelect = document.getElementById('pres_servicio');
+        const profSelect = document.getElementById('pres_profesional');
+        const hint = document.getElementById('pres_profesional_hint');
+        if (!srvSelect || !profSelect) return;
+
+        const srv = srvSelect.value.trim();
+        const prevProf = profSelect.value;
+        let aptos = [];
+
+        if (!srv) {
+            aptos = adminProfesionalesList;
+        } else if (adminMapaServiciosProfesionales && adminMapaServiciosProfesionales[srv]) {
+            const nombres = adminMapaServiciosProfesionales[srv];
+            aptos = adminProfesionalesList.filter(p => nombres.includes(p.nombre));
+        } else {
+            aptos = adminProfesionalesList;
+        }
+
+        profSelect.innerHTML = '<option value="">-- Seleccionar Profesional --</option>';
+        let preserve = false;
+        aptos.forEach(p => {
+            const opt = document.createElement('option');
+            opt.value = p.nombre;
+            opt.textContent = `${p.nombre} (${p.especialidad})`;
+            if (p.nombre === prevProf) {
+                opt.selected = true;
+                preserve = true;
+            }
+            profSelect.appendChild(opt);
+        });
+
+        if (!preserve) {
+            profSelect.value = '';
+        }
+
+        if (hint) {
+            if (srv) {
+                hint.innerHTML = `<span style="color: #059669; font-weight: 600;"><i class="fa-solid fa-user-check"></i> ${aptos.length} especialista(s) calificado(s) para este servicio.</span>`;
+            } else {
+                hint.innerHTML = 'Filtra los especialistas calificados según el servicio seleccionado.';
+            }
+        }
+    }
+
     // Cargar disponibilidad dinámica (R-31) en Agendamiento Presencial
     function cargarDisponibilidadPresencial() {
         const fecha = document.getElementById('pres_fecha').value;
@@ -851,12 +902,14 @@
         const servicio = document.getElementById('pres_servicio').value;
         const selectHora = document.getElementById('pres_hora');
         const info = document.getElementById('pres_hora_info');
+        const selectMascota = document.getElementById('pres_id_mascota');
+        const idMascota = selectMascota ? selectMascota.value : '';
 
         if (!fecha) return;
 
         selectHora.innerHTML = '<option value="">Consultando disponibilidad...</option>';
 
-        fetch(`/api/citas/disponibilidad?fecha=${fecha}&profesional=${encodeURIComponent(profesional)}&servicio=${encodeURIComponent(servicio)}`)
+        fetch(`/api/citas/disponibilidad?fecha=${fecha}&profesional=${encodeURIComponent(profesional)}&servicio=${encodeURIComponent(servicio)}&id_mascota=${encodeURIComponent(idMascota)}`)
             .then(res => res.json())
             .then(data => {
                 selectHora.innerHTML = '';

@@ -97,6 +97,74 @@
 </div>
 
 <div class="card-custom">
+    <div class="card-header-flex">
+        <div>
+            <h3><i class="fa-solid fa-boxes-packing" style="color: #2563eb;"></i> Productos y Artículos en Inventario</h3>
+            <span style="font-size: 0.85rem; color: #64748b;">Artículos registrados en catálogo con stock y precio actual.</span>
+        </div>
+        <a href="{{ route('admin.productos.index') }}" class="btn-action btn-add" style="font-size: 0.82rem; padding: 6px 12px; background: #2563eb;">
+            Ver Catálogo Completo <i class="fa-solid fa-arrow-right"></i>
+        </a>
+    </div>
+
+    <div class="table-responsive">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Producto</th>
+                    <th>Categoría</th>
+                    <th>Precio</th>
+                    <th>Stock</th>
+                    <th>Descripción</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse($productosRecientes as $p)
+                    <tr>
+                        <td><strong>#{{ $p->id_producto }}</strong></td>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <div style="width: 28px; height: 28px; border-radius: 6px; background: #eff6ff; display: flex; align-items: center; justify-content: center; color: #2563eb; font-size: 0.85rem;">
+                                    <i class="fa-solid fa-box"></i>
+                                </div>
+                                <strong style="color: #0f172a;">{{ $p->nombre }}</strong>
+                            </div>
+                        </td>
+                        <td>
+                            @if($p->categoria_nombre)
+                                <span class="status-badge" style="background: #f3e8ff; color: #7c3aed; border: 1px solid #d8b4fe;">
+                                    <i class="fa-solid fa-tag"></i> {{ $p->categoria_nombre }}
+                                </span>
+                            @else
+                                <span style="color: #94a3b8; font-style: italic;">Sin Categoría</span>
+                            @endif
+                        </td>
+                        <td><strong style="color: #059669; font-size: 0.95rem;">${{ number_format($p->precio, 2) }} MXN</strong></td>
+                        <td>
+                            @if($p->stock > 5)
+                                <span class="status-badge status-Confirmada">{{ $p->stock }} unidades</span>
+                            @elseif($p->stock > 0)
+                                <span class="status-badge status-Pendiente">{{ $p->stock }} unidades (Bajo)</span>
+                            @else
+                                <span class="status-badge status-Cancelada">Agotado (0)</span>
+                            @endif
+                        </td>
+                        <td style="max-width: 260px; white-space: normal; color: #475569; font-size: 0.85rem;">
+                            {{ $p->descripcion ? Str::limit($p->descripcion, 65) : 'Sin detalles' }}
+                        </td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="6" style="text-align: center; color: #94a3b8; padding: 2rem;">No hay productos registrados en el inventario.</td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="card-custom">
     <h3><i class="fa-solid fa-bolt"></i> Acceso Rápido a Módulos Administrativos</h3>
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-top: 1rem;">
         <a href="{{ route('admin.citas.index') }}" class="card-custom" style="text-decoration:none; margin:0; display:flex; align-items:center; gap:15px; border-left: 4px solid #2563eb;">

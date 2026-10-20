@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Services\CitaService;
+use App\Services\MascotaService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -383,11 +384,12 @@ class LandingController extends Controller
         if (session()->has('user_id') && Schema::hasTable('usuarios')) {
             $usuarioLogueado = DB::table('usuarios')->where('id_usuario', session('user_id'))->first();
             if (Schema::hasTable('mascotas')) {
-                $mascotasUsuario = DB::table('mascotas')->where('id_usuario', session('user_id'))->get();
+                $mascotasUsuario = MascotaService::getMascotasDeUsuario((int) session('user_id'));
             }
         }
 
         $profesionalesList = CitaService::getProfesionales();
+        $mapaServiciosProfesionales = CitaService::getMapaServiciosProfesionales();
 
         // Días no laborables oficiales para el datepicker y validación del frontend (Punto 8)
         $diasNoLaborables = [];
@@ -419,11 +421,31 @@ class LandingController extends Controller
                 ->toArray();
         }
 
+        // ---------------------------------------------------------------------
+        // CATÁLOGO DE PRODUCTOS & FARMACIA PARA LA LANDING PAGE
+        // ---------------------------------------------------------------------
+        $categoriasProductos = collect();
+        $productosLanding = collect();
+        if (Schema::hasTable('productos') && Schema::hasTable('categorias')) {
+            $categoriasProductos = DB::table('categorias')
+                ->select('categorias.*')
+                ->selectRaw('(SELECT COUNT(*) FROM productos WHERE productos.id_categoria = categorias.id_categoria) as total_productos')
+                ->orderBy('nombre', 'asc')
+                ->get();
+
+            $productosLanding = DB::table('productos')
+                ->leftJoin('categorias', 'productos.id_categoria', '=', 'categorias.id_categoria')
+                ->select('productos.*', 'categorias.nombre as categoria_nombre')
+                ->orderBy('productos.id_producto', 'desc')
+                ->get();
+        }
+
         return view('landing', compact(
             'clinicaInfo',
             'categoriasServicios',
             'personalMedico',
             'profesionalesList',
+            'mapaServiciosProfesionales',
             'diasSemana',
             'citasPorDia',
             'inicioSemana',
@@ -432,7 +454,9 @@ class LandingController extends Controller
             'usuarioLogueado',
             'mascotasUsuario',
             'diasNoLaborables',
-            'diasCerradosSemana'
+            'diasCerradosSemana',
+            'categoriasProductos',
+            'productosLanding'
         ));
     }
 
@@ -445,12 +469,14 @@ class LandingController extends Controller
             'fecha' => 'required|date',
             'profesional' => 'nullable|string',
             'servicio' => 'nullable|string',
+            'id_mascota' => 'nullable|integer',
         ]);
 
         $resultado = CitaService::obtenerHorariosDisponibles(
             $request->query('fecha'),
             $request->query('profesional'),
-            $request->query('servicio')
+            $request->query('servicio'),
+            $request->filled('id_mascota') ? (int) $request->query('id_mascota') : null
         );
 
         return response()->json($resultado);
@@ -556,6 +582,12 @@ class LandingController extends Controller
 
         // 2. VALIDACIÓN DE DISPONIBILIDAD DEL TRABAJADOR (R-32): Evitar citas simultáneas y bloqueos
         $profesional = $request->filled('profesional') ? trim($request->profesional) : null;
+        if ($profesional && ! CitaService::esProfesionalAptoParaServicio($profesional, $request->servicio)) {
+            return redirect()->back()
+                ->withInput()
+                ->withErrors(['profesional' => 'El profesional seleccionado no realiza el servicio solicitado. Por favor selecciona un especialista calificado.']);
+        }
+
         $dispTrabajador = CitaService::verificarDisponibilidadTrabajador($profesional, $request->fecha, $request->hora);
         if (! $dispTrabajador['disponible']) {
             // R-32: Notificación ventana azul con icono blanco de alerta
@@ -575,6 +607,14 @@ class LandingController extends Controller
         $usuario = DB::table('usuarios')->where('email', $inputEmail)->first();
 
         if (! $usuario) {
+            // Validar que el teléfono no pertenezca ya a otro usuario
+            $usuarioConTelefono = DB::table('usuarios')->where('telefono', $inputTelefono)->first();
+            if ($usuarioConTelefono) {
+                return redirect()->back()
+                    ->withInput()
+                    ->with('alerta_error_general', 'El número de teléfono ingresado ya está registrado por otro cliente. Solo se permite un número de teléfono por cliente.');
+            }
+
             $nuevoUserData = [
                 'nombre' => $inputNombre,
                 'email' => $inputEmail,
@@ -591,6 +631,18 @@ class LandingController extends Controller
         } else {
             $userId = $usuario->id_usuario;
 
+            // Si el teléfono ingresado ya pertenece a OTRO usuario, bloquear
+            $otroUsuarioConTelefono = DB::table('usuarios')
+                ->where('telefono', $inputTelefono)
+                ->where('id_usuario', '!=', $userId)
+                ->first();
+
+            if ($otroUsuarioConTelefono) {
+                return redirect()->back()
+                    ->withInput()
+                    ->with('alerta_error_general', 'El número de teléfono ingresado ya pertenece a otro cliente registrado. Solo se permite un número de teléfono por cliente.');
+            }
+
             if (Schema::hasColumn('usuarios', 'telefono') && empty($usuario->telefono)) {
                 DB::table('usuarios')->where('id_usuario', $userId)->update([
                     'telefono' => $inputTelefono,
@@ -602,19 +654,15 @@ class LandingController extends Controller
         $mascotaNombre = trim($request->mascota_nombre);
         $especie = trim($request->especie);
 
-        $mascota = DB::table('mascotas')
-            ->where('id_usuario', $userId)
-            ->where('nombre', $mascotaNombre)
-            ->first();
+        $mascota = MascotaService::buscarMascotaDeUsuarioPorNombre($userId, $mascotaNombre, $especie);
 
         if (! $mascota) {
-            $mascotaId = DB::table('mascotas')->insertGetId([
-                'id_usuario' => $userId,
+            $mascotaId = MascotaService::crearMascotaConDuenos([
                 'nombre' => $mascotaNombre,
                 'especie' => $especie,
                 'raza' => $request->raza ? trim($request->raza) : null,
                 'peso' => null,
-            ]);
+            ], $userId);
         } else {
             $mascotaId = $mascota->id_mascota;
         }
@@ -679,6 +727,17 @@ class LandingController extends Controller
     public function serviciosApi()
     {
         return response()->json(CitaService::getServicios());
+    }
+
+    /**
+     * API to fetch professionals filtered by service or all.
+     */
+    public function profesionalesApi(Request $request)
+    {
+        $servicio = $request->query('servicio');
+        $profesionales = CitaService::getProfesionalesPorServicio($servicio);
+
+        return response()->json($profesionales);
     }
 
     /**

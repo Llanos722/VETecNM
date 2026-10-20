@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Services\CitaService;
+use App\Services\MascotaService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -41,6 +42,14 @@ class AdminController extends Controller
             ->limit(5)
             ->get();
 
+        // Recent products / inventory preview
+        $productosRecientes = DB::table('productos')
+            ->leftJoin('categorias', 'productos.id_categoria', '=', 'categorias.id_categoria')
+            ->select('productos.*', 'categorias.nombre as categoria_nombre')
+            ->orderBy('productos.id_producto', 'desc')
+            ->limit(5)
+            ->get();
+
         return view('admin.dashboard', compact(
             'totalUsuarios',
             'totalClientes',
@@ -51,7 +60,8 @@ class AdminController extends Controller
             'totalCitas',
             'citasPendientes',
             'citasConfirmadas',
-            'citasRecientes'
+            'citasRecientes',
+            'productosRecientes'
         ));
     }
 
@@ -104,6 +114,7 @@ class AdminController extends Controller
 
         $serviciosPorCategoria = CitaService::getServiciosPorCategoria();
         $serviciosLista = CitaService::getServicios();
+        $mapaServiciosProfesionales = CitaService::getMapaServiciosProfesionales();
         $serviciosDisponibles = [];
         foreach ($serviciosPorCategoria as $catName => $items) {
             $serviciosDisponibles[$catName] = array_column($items, 'nombre');
@@ -117,6 +128,7 @@ class AdminController extends Controller
             'serviciosDisponibles',
             'serviciosPorCategoria',
             'serviciosLista',
+            'mapaServiciosProfesionales',
             'estadoFilter',
             'fechaFilter'
         ));
@@ -246,12 +258,16 @@ class AdminController extends Controller
                 'mascota_especie' => 'required|string|max:50',
             ]);
 
-            $mascotaId = DB::table('mascotas')->insertGetId([
-                'id_usuario' => $userId,
-                'nombre' => trim($request->mascota_nombre),
-                'especie' => trim($request->mascota_especie),
-                'raza' => $request->filled('mascota_raza') ? trim($request->mascota_raza) : null,
-            ]);
+            $mascotaExistente = MascotaService::buscarMascotaDeUsuarioPorNombre($userId, $request->mascota_nombre, $request->mascota_especie);
+            if ($mascotaExistente) {
+                $mascotaId = $mascotaExistente->id_mascota;
+            } else {
+                $mascotaId = MascotaService::crearMascotaConDuenos([
+                    'nombre' => trim($request->mascota_nombre),
+                    'especie' => trim($request->mascota_especie),
+                    'raza' => $request->filled('mascota_raza') ? trim($request->mascota_raza) : null,
+                ], $userId);
+            }
         }
 
         // 1. RESTRICCIÓN DE TIEMPO: No permitir hora pasada ni con menos de 30 minutos de anticipación
@@ -445,11 +461,17 @@ class AdminController extends Controller
 
     public function mascotasIndex()
     {
+        MascotaService::asegurarTablaMascotaDuenos();
+
         $mascotas = DB::table('mascotas')
-            ->join('usuarios', 'mascotas.id_usuario', '=', 'usuarios.id_usuario')
+            ->leftJoin('usuarios', 'mascotas.id_usuario', '=', 'usuarios.id_usuario')
             ->select('mascotas.*', 'usuarios.nombre as dueno_nombre', 'usuarios.email as dueno_email')
             ->orderBy('mascotas.id_mascota', 'desc')
             ->get();
+
+        foreach ($mascotas as $m) {
+            $m->duenos = MascotaService::getDuenosDeMascota($m->id_mascota);
+        }
 
         $usuarios = DB::table('usuarios')->orderBy('nombre', 'asc')->get();
 
@@ -460,40 +482,35 @@ class AdminController extends Controller
     {
         $request->validate([
             'id_usuario' => 'required|exists:usuarios,id_usuario',
+            'id_usuario_secundario' => 'nullable|different:id_usuario|exists:usuarios,id_usuario',
             'nombre' => 'required|string|max:100',
             'especie' => 'required|string|max:50',
             'raza' => 'nullable|string|max:50',
+            'edad' => 'nullable|integer|min:0|max:100',
             'peso' => 'nullable|numeric|min:0|max:999.99',
+        ], [
+            'edad.integer' => 'La edad debe ser un número entero.',
+            'edad.min' => 'La edad no puede ser menor a 0.',
+            'edad.max' => 'La edad no puede exceder 100 años.',
         ]);
 
-        // Check for duplicate pet (same owner, name, species, raza and peso)
-        $duplicateQuery = DB::table('mascotas')
-            ->where('id_usuario', $request->id_usuario)
-            ->where('nombre', trim($request->nombre))
-            ->where('especie', trim($request->especie));
-        if (!empty($request->raza)) {
-            $duplicateQuery->where('raza', trim($request->raza));
-        } else {
-            $duplicateQuery->whereNull('raza');
-        }
-        if (!empty($request->peso)) {
-            $duplicateQuery->where('peso', $request->peso);
-        } else {
-            $duplicateQuery->whereNull('peso');
-        }
-        if ($duplicateQuery->exists()) {
+        try {
+            MascotaService::crearMascotaConDuenos([
+                'nombre' => $request->nombre,
+                'especie' => $request->especie,
+                'raza' => $request->raza,
+                'edad' => $request->edad,
+                'peso' => $request->peso,
+            ], (int) $request->id_usuario, $request->filled('id_usuario_secundario') ? (int) $request->id_usuario_secundario : null);
+        } catch (ValidationException $e) {
+            $errorMsg = $e->validator->errors()->first('duplicado')
+                ?? $e->validator->errors()->first('id_usuario_secundario')
+                ?? $e->getMessage();
+
             return redirect()->back()
                 ->withInput()
-                ->with('error', 'Esta mascota ya está registrada.');
+                ->with('error', $errorMsg);
         }
-
-        DB::table('mascotas')->insert([
-            'id_usuario' => $request->id_usuario,
-            'nombre' => trim($request->nombre),
-            'especie' => trim($request->especie),
-            'raza' => $request->raza ? trim($request->raza) : null,
-            'peso' => $request->peso,
-        ]);
 
         return redirect()->route('admin.mascotas.index')->with('success', 'Mascota registrada exitosamente.');
     }
@@ -501,22 +518,93 @@ class AdminController extends Controller
     public function mascotasUpdate(Request $request, $id)
     {
         $request->validate([
-            'id_usuario' => 'required|exists:usuarios,id_usuario',
+            'id_usuario' => 'nullable|exists:usuarios,id_usuario',
             'nombre' => 'required|string|max:100',
             'especie' => 'required|string|max:50',
             'raza' => 'nullable|string|max:50',
+            'edad' => 'nullable|integer|min:0|max:100',
             'peso' => 'nullable|numeric|min:0|max:999.99',
+        ], [
+            'edad.integer' => 'La edad debe ser un número entero.',
+            'edad.min' => 'La edad no puede ser menor a 0.',
+            'edad.max' => 'La edad no puede exceder 100 años.',
         ]);
 
-        DB::table('mascotas')->where('id_mascota', $id)->update([
-            'id_usuario' => $request->id_usuario,
+        $duenos = MascotaService::getDuenosDeMascota((int) $id);
+        foreach ($duenos as $d) {
+            if (MascotaService::usuarioTieneMascotaConNombre($d->id_usuario, $request->nombre, $request->especie, (int) $id)) {
+                return redirect()->back()
+                    ->withInput()
+                    ->with('error', "El dueño {$d->nombre} ya tiene otra mascota registrada con el nombre '{$request->nombre}'.");
+            }
+        }
+
+        $updateData = [
             'nombre' => trim($request->nombre),
             'especie' => trim($request->especie),
             'raza' => $request->raza ? trim($request->raza) : null,
+            'edad' => $request->filled('edad') ? (int) $request->edad : null,
             'peso' => $request->peso,
-        ]);
+        ];
+
+        if ($request->filled('id_usuario')) {
+            $updateData['id_usuario'] = $request->id_usuario;
+        }
+
+        DB::table('mascotas')->where('id_mascota', $id)->update($updateData);
 
         return redirect()->route('admin.mascotas.index')->with('success', 'Datos de la mascota actualizados.');
+    }
+
+    /**
+     * Asignar un cliente como dueño de una mascota (Admin y Recepcionista).
+     */
+    public function asignarDueno(Request $request, $id)
+    {
+        if (! in_array(session('user_rol'), ['admin', 'recepcionista'], true)) {
+            abort(403, 'Acceso no autorizado.');
+        }
+
+        $request->validate([
+            'id_usuario' => 'required|exists:usuarios,id_usuario',
+        ]);
+
+        try {
+            $res = MascotaService::asignarDueno((int) $id, (int) $request->id_usuario);
+
+            return redirect()->back()->with('success', $res['mensaje']);
+        } catch (ValidationException $e) {
+            $msg = $e->validator->errors()->first('limite')
+                ?? $e->validator->errors()->first('duplicado')
+                ?? $e->validator->errors()->first('mascota')
+                ?? $e->getMessage();
+
+            return redirect()->back()->with('error', $msg);
+        }
+    }
+
+    /**
+     * Quitar/desvincular un cliente como dueño de una mascota (Admin y Recepcionista).
+     */
+    public function quitarDueno(Request $request, $id)
+    {
+        if (! in_array(session('user_rol'), ['admin', 'recepcionista'], true)) {
+            abort(403, 'Acceso no autorizado.');
+        }
+
+        $request->validate([
+            'id_usuario' => 'required|exists:usuarios,id_usuario',
+        ]);
+
+        try {
+            $res = MascotaService::quitarDueno((int) $id, (int) $request->id_usuario);
+
+            return redirect()->back()->with('success', $res['mensaje']);
+        } catch (ValidationException $e) {
+            $msg = $e->validator->errors()->first('dueno') ?? $e->getMessage();
+
+            return redirect()->back()->with('error', $msg);
+        }
     }
 
     public function mascotasDestroy($id)
@@ -575,9 +663,12 @@ class AdminController extends Controller
         $request->validate([
             'nombre' => 'required|string|max:100',
             'email' => 'required|email|max:100|unique:usuarios,email',
-            'telefono' => 'nullable|string|max:20',
+            'telefono' => 'nullable|string|max:20|unique:usuarios,telefono',
             'password' => 'required|string|min:6',
             'rol' => 'required|in:cliente,admin,recepcionista',
+        ], [
+            'email.unique' => 'Este correo electrónico ya está registrado.',
+            'telefono.unique' => 'Este número de teléfono ya está registrado por otro cliente. Solo se permite un número de teléfono por cliente.',
         ]);
 
         $userData = [
@@ -602,9 +693,12 @@ class AdminController extends Controller
         $request->validate([
             'nombre' => 'required|string|max:100',
             'email' => 'required|email|max:100|unique:usuarios,email,'.$id.',id_usuario',
-            'telefono' => 'nullable|string|max:20',
+            'telefono' => 'nullable|string|max:20|unique:usuarios,telefono,'.$id.',id_usuario',
             'rol' => 'required|in:cliente,admin,recepcionista',
             'password' => 'nullable|string|min:6',
+        ], [
+            'email.unique' => 'Este correo electrónico ya está registrado.',
+            'telefono.unique' => 'Este número de teléfono ya está registrado por otro cliente. Solo se permite un número de teléfono por cliente.',
         ]);
 
         $updateData = [

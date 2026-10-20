@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Services\CitaService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
@@ -52,6 +53,7 @@ class CitasRequerimientosTest extends TestCase
                 nombre VARCHAR(100) NOT NULL,
                 especie VARCHAR(50) NOT NULL,
                 raza VARCHAR(50),
+                edad INTEGER,
                 peso DECIMAL(5,2)
             )
         ');
@@ -536,5 +538,212 @@ class CitasRequerimientosTest extends TestCase
         $response->assertStatus(200);
         $response->assertSee('Dolor estomacal y falta de apetito');
         $response->assertSee('350.00');
+    }
+
+    /**
+     * Prueba: El filtro de profesionales retorna los especialistas adecuados según el servicio.
+     */
+    public function test_filtro_profesionales_retorna_especialistas_adecuados_segun_servicio(): void
+    {
+        // 1. Servicio de estética canina debe retornar al técnico especialista Roberto Silva
+        $profEstetica = CitaService::getProfesionalesPorServicio('Baño Médico / Antipulgas y Spa Canino');
+        $this->assertCount(1, $profEstetica);
+        $this->assertEquals('Téc. Roberto Silva Hernández', $profEstetica[0]['nombre']);
+        $this->assertEquals('estetica', $profEstetica[0]['tipo']);
+
+        // 2. Servicio de cirugía debe incluir a la Dra. Sofía Valenzuela y excluir a Roberto Silva
+        $profCirugia = CitaService::getProfesionalesPorServicio('Cirugía de Tejidos Blandos y Traumatología');
+        $nombresCirugia = array_column($profCirugia, 'nombre');
+        $this->assertContains('Dra. Sofía Valenzuela Méndez', $nombresCirugia);
+        $this->assertNotContains('Téc. Roberto Silva Hernández', $nombresCirugia);
+
+        // 3. Servicio de Imagenología debe incluir al Dr. Alejandro Gómez Morales
+        $profImagen = CitaService::getProfesionalesPorServicio('Imagenología (Rayos X y Ultrasonido Digital)');
+        $nombresImagen = array_column($profImagen, 'nombre');
+        $this->assertContains('Dr. Alejandro Gómez Morales', $nombresImagen);
+        $this->assertNotContains('Téc. Roberto Silva Hernández', $nombresImagen);
+
+        // 4. Servicio de Consulta Médica General debe incluir a todos los médicos y excluir a estética
+        $profConsulta = CitaService::getProfesionalesPorServicio('Consulta Médica General y Pediátrica');
+        $nombresConsulta = array_column($profConsulta, 'nombre');
+        $this->assertContains('Dra. Sofía Valenzuela Méndez', $nombresConsulta);
+        $this->assertContains('Dr. Alejandro Gómez Morales', $nombresConsulta);
+        $this->assertContains('Dra. Mariana Rivas Torres', $nombresConsulta);
+        $this->assertNotContains('Téc. Roberto Silva Hernández', $nombresConsulta);
+
+        // 5. Validaciones de aptitud
+        $this->assertTrue(CitaService::esProfesionalAptoParaServicio('Dra. Sofía Valenzuela Méndez', 'Cirugía de Tejidos Blandos y Traumatología'));
+        $this->assertFalse(CitaService::esProfesionalAptoParaServicio('Téc. Roberto Silva Hernández', 'Cirugía de Tejidos Blandos y Traumatología'));
+        $this->assertTrue(CitaService::esProfesionalAptoParaServicio('Téc. Roberto Silva Hernández', 'Baño Médico / Antipulgas y Spa Canino'));
+        $this->assertFalse(CitaService::esProfesionalAptoParaServicio('Dra. Sofía Valenzuela Méndez', 'Corte de Raza y Estilismo Profesional'));
+    }
+
+    /**
+     * Prueba: Endpoint API /api/profesionales responde con profesionales filtrados según el servicio.
+     */
+    public function test_api_profesionales_filtra_por_servicio(): void
+    {
+        $responseEstetica = $this->getJson('/api/profesionales?servicio=Corte de Raza y Estilismo Profesional');
+        $responseEstetica->assertStatus(200);
+        $dataEstetica = $responseEstetica->json();
+        $this->assertCount(1, $dataEstetica);
+        $this->assertEquals('Téc. Roberto Silva Hernández', $dataEstetica[0]['nombre']);
+
+        $responseTodos = $this->getJson('/api/profesionales');
+        $responseTodos->assertStatus(200);
+        $dataTodos = $responseTodos->json();
+        $this->assertCount(4, $dataTodos);
+    }
+
+    /**
+     * Prueba: Cliente no puede agendar un servicio con un profesional no capacitado para el mismo.
+     */
+    public function test_cliente_no_puede_agendar_servicio_con_profesional_no_calificado(): void
+    {
+        $userId = DB::table('usuarios')->insertGetId([
+            'nombre' => 'Cliente Filtro Test',
+            'email' => 'filtrotest@example.com',
+            'password' => bcrypt('password'),
+            'rol' => 'cliente',
+        ]);
+        $mascotaId = DB::table('mascotas')->insertGetId([
+            'id_usuario' => $userId,
+            'nombre' => 'Firu',
+            'especie' => 'Perro',
+        ]);
+
+        $fecha = Carbon::now()->addDays(4)->toDateString();
+
+        // Intento inválido: Cirugía con el técnico estilista Roberto Silva
+        $respInvalido = $this->withSession(['user_id' => $userId, 'user_rol' => 'cliente'])
+            ->post('/citas/agendar-cliente', [
+                'id_mascota' => $mascotaId,
+                'servicio' => 'Cirugía de Tejidos Blandos y Traumatología',
+                'profesional' => 'Téc. Roberto Silva Hernández',
+                'fecha' => $fecha,
+                'hora' => '11:00',
+            ]);
+
+        $respInvalido->assertSessionHasErrors('profesional');
+
+        // Intento válido: Cirugía con la Dra. Sofía Valenzuela Méndez
+        $respValido = $this->withSession(['user_id' => $userId, 'user_rol' => 'cliente'])
+            ->post('/citas/agendar-cliente', [
+                'id_mascota' => $mascotaId,
+                'servicio' => 'Cirugía de Tejidos Blandos y Traumatología',
+                'profesional' => 'Dra. Sofía Valenzuela Méndez',
+                'fecha' => $fecha,
+                'hora' => '11:00',
+            ]);
+
+        $respValido->assertRedirect(route('dashboard'));
+    }
+
+    /**
+     * Prueba: Solo se permite como máximo una cita al día por mascota.
+     */
+    public function test_solo_se_permite_una_cita_al_dia_por_mascota(): void
+    {
+        $userId = DB::table('usuarios')->insertGetId([
+            'nombre' => 'Dueño Test Cita Unica',
+            'email' => 'dueñounico@example.com',
+            'password' => bcrypt('password'),
+            'rol' => 'cliente',
+        ]);
+        $mascota1 = DB::table('mascotas')->insertGetId([
+            'id_usuario' => $userId,
+            'nombre' => 'Rex',
+            'especie' => 'Perro',
+        ]);
+        $mascota2 = DB::table('mascotas')->insertGetId([
+            'id_usuario' => $userId,
+            'nombre' => 'Mimi',
+            'especie' => 'Gato',
+        ]);
+
+        $fecha = Carbon::now()->addDays(5)->toDateString();
+
+        // 1. Agendar primera cita para Rex a las 09:00 (válida)
+        $resp1 = $this->withSession(['user_id' => $userId, 'user_rol' => 'cliente'])
+            ->post('/citas/agendar-cliente', [
+                'id_mascota' => $mascota1,
+                'servicio' => 'Consulta Médica General y Pediátrica',
+                'profesional' => 'Dra. Sofía Valenzuela Méndez',
+                'fecha' => $fecha,
+                'hora' => '09:00',
+                'motivo' => 'Consulta matutina',
+            ]);
+        $resp1->assertRedirect(route('dashboard'));
+        $this->assertEquals(1, DB::table('citas')->where('id_mascota', $mascota1)->where('fecha', $fecha)->count());
+
+        // 2. Intentar agendar segunda cita para la MISMA mascota Rex el MISMO día a DIFERENTE hora (15:00)
+        $resp2 = $this->withSession(['user_id' => $userId, 'user_rol' => 'cliente'])
+            ->post('/citas/agendar-cliente', [
+                'id_mascota' => $mascota1,
+                'servicio' => 'Esquema de Vacunación Canina y Felina',
+                'profesional' => 'Dra. Mariana Rivas Torres',
+                'fecha' => $fecha,
+                'hora' => '15:00',
+                'motivo' => 'Vacuna vespertina',
+            ]);
+
+        $resp2->assertSessionHas('error');
+        $resp2->assertSessionHas('alerta_error_general');
+        // Debe haber únicamente 1 cita para Rex en esa fecha
+        $this->assertEquals(1, DB::table('citas')->where('id_mascota', $mascota1)->where('fecha', $fecha)->count());
+
+        // 3. Agendar cita el MISMO día para OTRA mascota (Mimi) (debe permitirse)
+        $resp3 = $this->withSession(['user_id' => $userId, 'user_rol' => 'cliente'])
+            ->post('/citas/agendar-cliente', [
+                'id_mascota' => $mascota2,
+                'servicio' => 'Consulta Médica General y Pediátrica',
+                'profesional' => 'Dr. Alejandro Gómez Morales',
+                'fecha' => $fecha,
+                'hora' => '15:00',
+                'motivo' => 'Revisión de Mimi',
+            ]);
+        $resp3->assertRedirect(route('dashboard'));
+        $this->assertEquals(1, DB::table('citas')->where('id_mascota', $mascota2)->where('fecha', $fecha)->count());
+    }
+
+    /**
+     * Prueba: La API de disponibilidad informa que la mascota ya tiene una cita ese día.
+     */
+    public function test_api_disponibilidad_bloquea_si_mascota_ya_tiene_cita_en_la_fecha(): void
+    {
+        $userId = DB::table('usuarios')->insertGetId([
+            'nombre' => 'Test API Mascota',
+            'email' => 'apimascota@example.com',
+            'password' => bcrypt('password'),
+            'rol' => 'cliente',
+        ]);
+        $mascotaId = DB::table('mascotas')->insertGetId([
+            'id_usuario' => $userId,
+            'nombre' => 'Lucas',
+            'especie' => 'Perro',
+        ]);
+
+        $fecha = Carbon::now()->addDays(6)->toDateString();
+
+        // Antes de tener cita: la mascota tiene horarios disponibles
+        $respAntes = $this->getJson("/api/citas/disponibilidad?fecha={$fecha}&id_mascota={$mascotaId}");
+        $respAntes->assertStatus(200);
+        $this->assertTrue($respAntes->json('disponible'));
+
+        // Registrar cita para Lucas
+        DB::table('citas')->insert([
+            'id_mascota' => $mascotaId,
+            'fecha' => $fecha,
+            'hora' => '10:00:00',
+            'servicio' => 'Consulta',
+            'motivo' => 'Chequeo general',
+            'estado' => 'Confirmada',
+        ]);
+
+        // Después de tener cita: la API bloquea y avisa que ya tiene cita ese día
+        $respDespues = $this->getJson("/api/citas/disponibilidad?fecha={$fecha}&id_mascota={$mascotaId}");
+        $respDespues->assertStatus(200);
+        $this->assertFalse($respDespues->json('disponible'));
+        $this->assertStringContainsString('Solo se permite una cita al día por mascota', $respDespues->json('motivo_cierre'));
     }
 }
